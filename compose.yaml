@@ -1,0 +1,8 @@
+services:
+  server:
+    container_name: pill-dispenser-server-agent
+    build:
+      context: .
+      target: server
+    ports:
+      - "8000:8000"
