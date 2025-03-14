@@ -5,4 +5,4 @@ services:
       context: .
       target: server
     ports:
-      - "8000:8000"
+      - "3054:3054"

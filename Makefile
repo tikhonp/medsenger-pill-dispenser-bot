@@ -4,7 +4,8 @@ dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
 dev:
 	docker compose -f compose.yaml up
 
-build-dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
+build-dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD) 
+build-dev: export COMPOSE_BAKE=true
 build-dev:
 	docker compose -f compose.yaml up --build
 
