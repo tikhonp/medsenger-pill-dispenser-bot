@@ -56,8 +56,8 @@ func pillsSchedulerHandlerV2(c echo.Context) error {
 		timestamp_start := uint32(now.Add(time.Minute * time.Duration(i)).Unix())
 		timestamp_end := uint32(now.Add(time.Minute * time.Duration(i)).Add(time.Second * 30).Unix())
 		meta := uint8(1)
-		out = binary.BigEndian.AppendUint32(out, timestamp_start)
-		out = binary.BigEndian.AppendUint32(out, timestamp_end)
+		out = binary.LittleEndian.AppendUint32(out, timestamp_start)
+		out = binary.LittleEndian.AppendUint32(out, timestamp_end)
 		out = append(out, meta)
 	}
 
