@@ -37,15 +37,42 @@ func pillsSchedulerHandler(c echo.Context) error {
 	return c.Blob(http.StatusOK, ContentTypeOctetStream, out)
 }
 
+func pillsSchedulerHandlerV2(c echo.Context) error {
+	serialNumber := c.QueryParam("serial_number")
+	if serialNumber != "" {
+		fmt.Println("Scheduler request from:", serialNumber)
+	}
+
+	var cellsCount = 4
+	cellsCountStr := c.QueryParam("cells_count")
+	if cellsCountP, err := strconv.Atoi(cellsCountStr); err == nil {
+		cellsCount = cellsCountP
+	}
+
+	out := make([]byte, 0, cellsCount*(4+4+1))
+	now := time.Now()
+	for i := range cellsCount {
+		// make array of timestamps from now and every minute after
+		timestamp_start := uint32(now.Add(time.Minute * time.Duration(i)).Unix())
+		timestamp_end := uint32(now.Add(time.Minute * time.Duration(i)).Add(time.Second * 30).Unix())
+		meta := uint8(1)
+		out = binary.BigEndian.AppendUint32(out, timestamp_start)
+		out = binary.BigEndian.AppendUint32(out, timestamp_end)
+		out = append(out, meta)
+	}
+
+	return c.Blob(http.StatusOK, ContentTypeOctetStream, out)
+}
+
 func submitPill(c echo.Context) error {
 
 	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
 		return err
 	}
-    if len(body) < 5 {
-        return echo.NewHTTPError(http.StatusBadRequest, "data length must be at least 5 bytes")
-    }
+	if len(body) < 5 {
+		return echo.NewHTTPError(http.StatusBadRequest, "data length must be at least 5 bytes")
+	}
 
 	var timestamp uint32
 	_, err = binary.Decode(body[:4], binary.BigEndian, &timestamp)
@@ -73,6 +100,7 @@ func main() {
 		return c.String(http.StatusOK, "Купил мужик шляпу, а она ему как раз!")
 	})
 	e.GET("/schedule", pillsSchedulerHandler)
+	e.GET("/schedule/v2", pillsSchedulerHandlerV2)
 	e.POST("/submit", submitPill)
 	e.POST("/status", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{"is_tracking_data": true, "supported_scenarios": []int{}, "tracked_contracts": []int{}})
