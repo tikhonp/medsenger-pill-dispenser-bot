@@ -71,12 +71,14 @@ func submitPill(c echo.Context) error {
 		return err
 	}
 	if len(body) < 5 {
+		fmt.Printf("SUBMIT: recieved body less than 5 bytes (%d)", len(body))
 		return echo.NewHTTPError(http.StatusBadRequest, "data length must be at least 5 bytes")
 	}
 
 	var timestamp uint32
 	_, err = binary.Decode(body[:4], binary.BigEndian, &timestamp)
 	if err != nil {
+		fmt.Printf("SUBMIT: err: %s", err.Error())
 		return err
 	}
 	submitTime := time.Unix(int64(timestamp), 0)
