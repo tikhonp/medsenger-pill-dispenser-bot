@@ -14,29 +14,6 @@ import (
 
 const ContentTypeOctetStream = "application/octet-stream"
 
-func pillsSchedulerHandler(c echo.Context) error {
-	serialNumber := c.QueryParam("serial_number")
-	if serialNumber != "" {
-		fmt.Println("Scheduler request from:", serialNumber)
-	}
-
-	var cellsCount = 4
-	cellsCountStr := c.QueryParam("cells_count")
-	if cellsCountP, err := strconv.Atoi(cellsCountStr); err == nil {
-		cellsCount = cellsCountP
-	}
-
-	out := make([]byte, 0, cellsCount*4)
-	now := time.Now()
-	for i := range cellsCount {
-		// make array of timestamps from now and every minute after
-		timestamp := uint32(now.Add(time.Minute * time.Duration(i)).Unix())
-		out = binary.BigEndian.AppendUint32(out, timestamp)
-	}
-
-	return c.Blob(http.StatusOK, ContentTypeOctetStream, out)
-}
-
 func pillsSchedulerHandlerV2(c echo.Context) error {
 	serialNumber := c.QueryParam("serial_number")
 	if serialNumber != "" {
@@ -49,7 +26,8 @@ func pillsSchedulerHandlerV2(c echo.Context) error {
 		cellsCount = cellsCountP
 	}
 
-	out := make([]byte, 0, cellsCount*(4+4+1))
+	// (uint32, uint32, uint8) * cellcount  + uint32
+	out := make([]byte, 0, cellsCount*(4+4+1)+4)
 	now := time.Now()
 	for i := range cellsCount {
 		// make array of timestamps from now and every minute after
@@ -60,6 +38,9 @@ func pillsSchedulerHandlerV2(c echo.Context) error {
 		out = binary.LittleEndian.AppendUint32(out, timestamp_end)
 		out = append(out, meta)
 	}
+
+	var refreshRateSec uint32 = 60 * 2
+	out = binary.LittleEndian.AppendUint32(out, refreshRateSec)
 
 	return c.Blob(http.StatusOK, ContentTypeOctetStream, out)
 }
@@ -101,7 +82,6 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Купил мужик шляпу, а она ему как раз!")
 	})
-	e.GET("/schedule", pillsSchedulerHandler)
 	e.GET("/schedule/v2", pillsSchedulerHandlerV2)
 	e.POST("/submit", submitPill)
 	e.POST("/status", func(c echo.Context) error {
