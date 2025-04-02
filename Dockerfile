@@ -1,16 +1,36 @@
 # syntax=docker/dockerfile:1
 
-ARG GOVERSION=1.24.1
+ARG GOVERSION=1.24.2
 
-FROM golang:${GOVERSION}-alpine AS build
-WORKDIR /app
+FROM golang:${GOVERSION}-bookworm AS dev
+WORKDIR /src
+ADD --chmod=111 "https://github.com/apple/pkl/releases/download/0.28.1/pkl-linux-aarch64" /usr/bin/pkl
+RUN go install "github.com/air-verse/air@latest"
+RUN go install "github.com/pressly/goose/v3/cmd/goose@latest"
 COPY go.mod go.sum ./
-RUN go mod download
-COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server
+RUN go mod download && go mod verify
+ARG SOURCE_COMMIT
+RUN echo $SOURCE_COMMIT > /src/release.txt
+ARG TARGETARCH
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,target=. \
+    PKG_CONFIG_PATH=/srv/openalpr/src/build GOARCH=$TARGETARCH go build -o /bin/manage ./cmd/manage/
+COPY . .
+CMD ["air"]
 
-FROM alpine AS server
-WORKDIR /
-COPY --from=build /server /server
-EXPOSE 8080
-CMD ["/server"]
+
+FROM golang:${GOVERSION} AS prod
+WORKDIR /src
+ADD --chmod=111 'https://github.com/apple/pkl/releases/download/0.28.1/pkl-alpine-linux-amd64' /bin/pkl
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+ARG SOURCE_COMMIT
+RUN echo $SOURCE_COMMIT > release.txt
+ARG TARGETARCH
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,target=.\
+    GOARCH=$TARGETARCH go build -o /bin/manage ./cmd/manage/
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,target=. \
+    GOARCH=$TARGETARCH go build -o /bin/server ./cmd/server/
+COPY . .
+CMD ["/bin/server"]

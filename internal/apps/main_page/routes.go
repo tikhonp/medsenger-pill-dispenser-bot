@@ -1,4 +1,4 @@
-package main
+package mainpage
 
 import (
 	"encoding/binary"
@@ -8,8 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 )
 
 const ContentTypeOctetStream = "application/octet-stream"
@@ -71,22 +72,13 @@ func submitPill(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func main() {
-	e := echo.New()
-	e.HideBanner = true
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "[${time_rfc3339}] ${status} ${method} ${path} (${remote_ip}) ${latency_human}\n",
-		Output: e.Logger.Output(),
-	}))
-
-	e.GET("/", func(c echo.Context) error {
+func ConfigureMainPageGroup(g *echo.Group, cfg *config.Config, modelsFactory db.ModelsFactory) {
+	g.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Купил мужик шляпу, а она ему как раз!")
 	})
-	e.GET("/schedule/v2", pillsSchedulerHandlerV2)
-	e.POST("/submit", submitPill)
-	e.POST("/status", func(c echo.Context) error {
+	g.GET("/schedule/v2", pillsSchedulerHandlerV2)
+	g.POST("/submit", submitPill)
+	g.POST("/status", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{"is_tracking_data": true, "supported_scenarios": []int{}, "tracked_contracts": []int{}})
 	})
-
-	e.Logger.Fatal(e.Start(":3054"))
 }

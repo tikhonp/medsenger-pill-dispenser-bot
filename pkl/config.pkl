@@ -1,0 +1,23 @@
+@go.Package { name = "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config" }
+module config
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.9.0#/go.pkl" 
+
+class Server {
+  /// The hostname of this application.
+  host: String
+
+  /// The port to listen on.
+  port: UInt16
+
+  /// Sets server to debug mode.
+  debug: Boolean
+}
+
+/// SQLite database configuration.
+class Database {
+    dbFilePath: String
+}
+
+db: Database
+server: Server
