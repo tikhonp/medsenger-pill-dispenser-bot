@@ -8,6 +8,9 @@ import (
 )
 
 type Config struct {
+	// Text file must contain release version or commit hash.
+	ReleaseFilePath string `pkl:"releaseFilePath"`
+
 	Db *Database `pkl:"db"`
 
 	Server *Server `pkl:"server"`
