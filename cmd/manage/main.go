@@ -35,7 +35,7 @@ type manageConfig struct {
 	configPath string
 }
 
-func ParseFlags() *manageConfig {
+func parseFlags() *manageConfig {
 	cfg := &manageConfig{}
 
 	const commandUsage = "command to run. Available commands: print-db-string, create-super-admin"
@@ -56,7 +56,7 @@ func printDbString(cfg *config.Config) {
 }
 
 func main() {
-	manageConfig := ParseFlags()
+	manageConfig := parseFlags()
 
 	cfg, err := config.LoadFromPath(context.Background(), manageConfig.configPath)
 	if err != nil {

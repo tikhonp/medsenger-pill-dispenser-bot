@@ -2,7 +2,7 @@ package db
 
 import (
 	"github.com/jmoiron/sqlx"
-    _ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 )
 

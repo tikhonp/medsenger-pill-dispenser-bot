@@ -1,7 +1,7 @@
 @go.Package { name = "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config" }
 module config
 
-import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.9.0#/go.pkl" 
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.10.0#/go.pkl" 
 
 class Server {
   /// The hostname of this application.
@@ -12,6 +12,9 @@ class Server {
 
   /// Sets server to debug mode.
   debug: Boolean
+
+  /// Medsenger Agent secret key.
+  medsengerAgentKey: String
 }
 
 /// SQLite database configuration.
@@ -19,5 +22,9 @@ class Database {
     dbFilePath: String
 }
 
+/// Text file must contain release version or commit hash.
+releaseFilePath: String
+
 db: Database
 server: Server
+

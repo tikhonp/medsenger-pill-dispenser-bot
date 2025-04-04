@@ -1,4 +1,4 @@
-.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container pkl-gen db-status db-up db-down db-reset
+.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container pkl-gen db-status db-up db-down db-reset templ
 
 run: dev
 
@@ -38,3 +38,6 @@ db-reset:
 
 pkl-gen:
 	pkl-gen-go pkl/config.pkl --base-path github.com/tikhonp/medsenger-pill-dispenser-bot
+
+templ:
+	templ generate

@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: pill-dispenser-server-agent
+    container_name: pill-dispenser-agent
     image: pill-dispenser-bot
     restart: always
     build:
