@@ -6,7 +6,7 @@ CREATE TABLE contracts (
     agent_token VARCHAR(254),
     patient_name VARCHAR(254),
     patient_email VARCHAR(254),
-    locale VARCHAR(5) NULL,
+    locale VARCHAR(5) NULL
 );
 -- +goose StatementEnd
 

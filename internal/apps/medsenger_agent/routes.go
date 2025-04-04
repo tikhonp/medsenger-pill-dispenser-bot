@@ -11,6 +11,7 @@ import (
 
 func ConfigureMedsengerAgentGroup(g *echo.Group, cfg *config.Config, modelsFactory db.ModelsFactory, maigoClient *maigo.Client) {
 	mah := handlers.MedsengerAgentHandler{
+		Db:          modelsFactory,
 		MaigoClient: maigoClient,
 	}
 
