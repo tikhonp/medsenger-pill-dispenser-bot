@@ -21,4 +21,5 @@ func ConfigureMedsengerAgentGroup(g *echo.Group, cfg *config.Config, modelsFacto
 	g.POST("/status", mah.Status, util.ApiKeyJSON(cfg.Server))
 	g.POST("/remove", mah.Remove, util.ApiKeyJSON(cfg.Server))
 
+	g.GET("/settings", mah.SettingsGet, util.ApiKeyGetParam(cfg.Server))
 }

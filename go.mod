@@ -4,7 +4,8 @@ go 1.23.7
 
 require (
 	github.com/TikhonP/maigo v0.4.1
-	github.com/apple/pkl-go v0.9.0
+	github.com/a-h/templ v0.3.857
+	github.com/apple/pkl-go v0.10.0
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo/v4 v4.13.3
@@ -27,5 +28,5 @@ require (
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
-	golang.org/x/time v0.8.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 )
