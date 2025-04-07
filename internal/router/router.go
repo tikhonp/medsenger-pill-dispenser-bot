@@ -50,7 +50,7 @@ func New(cfg *config.Config) *echo.Echo {
 
 func RegisterRoutes(e *echo.Echo, cfg *config.Config, modelsFactory db.ModelsFactory, maigoClient *maigo.Client) {
 	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group(""), cfg, modelsFactory, maigoClient)
-	pilldispenser.ConfigurePillDispenserGroup(e.Group("pill-dispenser/"), cfg, modelsFactory, maigoClient)
+    pilldispenser.ConfigurePillDispenserGroup(e.Group("/pill-dispenser"), cfg, modelsFactory, maigoClient)
 }
 
 func Start(e *echo.Echo, cfg *config.Config) error {
