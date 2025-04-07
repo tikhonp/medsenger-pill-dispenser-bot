@@ -11,6 +11,6 @@ import (
 func ConfigurePillDispenserGroup(g *echo.Group, cfg *config.Config, modelsFactory db.ModelsFactory, maigoClient *maigo.Client) {
 	pdh := handlers.PillDispenserHandler{Db: modelsFactory}
 
-	g.GET("/schedule/v2", pdh.GetSchedule)
+	g.GET("/schedule", pdh.GetSchedule)
 	g.POST("/submit", pdh.SubmitPills)
 }
