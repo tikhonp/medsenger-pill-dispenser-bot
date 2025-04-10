@@ -7,6 +7,8 @@ WORKDIR /src
 ADD --chmod=111 "https://github.com/apple/pkl/releases/download/0.28.1/pkl-linux-aarch64" /usr/bin/pkl
 RUN go install "github.com/air-verse/air@latest"
 RUN go install "github.com/pressly/goose/v3/cmd/goose@latest"
+RUN go install "github.com/apple/pkl-go/cmd/pkl-gen-go@latest"
+RUN go install "github.com/a-h/templ/cmd/templ@latest"
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 ARG SOURCE_COMMIT

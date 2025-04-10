@@ -22,7 +22,7 @@ logs-prod:
 	docker compose -f compose.prod.yaml logs -f -n 100
 
 go-to-server-container:
-	docker exec -it pill-dispenser-server-agent /bin/bash
+	docker exec -it pill-dispenser-agent /bin/bash
 
 db-status:
 	docker exec -it pill-dispenser-agent goose sqlite3 "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations status
@@ -37,7 +37,7 @@ db-reset:
 	docker exec -it pill-dispenser-agent goose sqlite3 "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations reset
 
 pkl-gen:
-	pkl-gen-go pkl/config.pkl --base-path github.com/tikhonp/medsenger-pill-dispenser-bot
+	docker exec -it pill-dispenser-agent pkl-gen-go pkl/config.pkl --base-path github.com/tikhonp/medsenger-pill-dispenser-bot
 
 templ:
-	templ generate
+	docker exec -it pill-dispenser-agent templ generate
