@@ -45,13 +45,13 @@ func NewContracts(db *sqlx.DB) Contracts {
 
 func (c *contracts) GetActiveContractIds() ([]int, error) {
 	var contractIds = make([]int, 0)
-	err := c.db.Select(&contractIds, `SELECT id FROM contracts WHERE is_active = true`)
+	err := c.db.Select(&contractIds, `SELECT id FROM contract WHERE is_active = true`)
 	return contractIds, err
 }
 
 func (c *contracts) NewContract(contractId int, agentToken, locale string) error {
 	const query = `
-		INSERT INTO contracts (id, is_active, agent_token, locale)
+		INSERT INTO contract (id, is_active, agent_token, locale)
         VALUES ($1, TRUE, $2, $3) ON CONFLICT (id)
 		DO UPDATE SET is_active = EXCLUDED.is_active, agent_token = EXCLUDED.agent_token, locale = EXCLUDED.locale
 	`
@@ -62,13 +62,13 @@ func (c *contracts) NewContract(contractId int, agentToken, locale string) error
 
 func (c *contracts) UpdateContractWithPatientData(contractId int, patientName, patientEmail string) error {
 	const query = `
-        UPDATE contracts SET (patient_name = $1, patient_email = $2) WHERE id = $3
+        UPDATE contract SET (patient_name = $1, patient_email = $2) WHERE id = $3
     `
 	_, err := c.db.Exec(query, patientName, patientEmail, contractId)
 	return err
 }
 
 func (c *contracts) MarkInactiveContractWithId(id int) error {
-	_, err := c.db.Exec(`UPDATE contracts SET is_active = false WHERE id = $1`, id)
+	_, err := c.db.Exec(`UPDATE contract SET is_active = false WHERE id = $1`, id)
 	return err
 }
