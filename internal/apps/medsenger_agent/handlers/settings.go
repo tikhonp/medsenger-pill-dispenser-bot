@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -70,5 +71,44 @@ func (mah *MedsengerAgentHandler) RemoveContractPillDispenser(c echo.Context) er
 	if err != nil {
 		return err
 	}
+	return c.NoContent(http.StatusOK)
+}
+
+func (mah *MedsengerAgentHandler) SetScheduleGet(c echo.Context) error {
+	serialNumber := c.Param("serial-number")
+
+	pillDispenser, err := mah.Db.PillDispensers().Get(serialNumber)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound)
+	}
+
+	return util.TemplRender(c, views.ScheduleSettings(pillDispenser))
+}
+
+func (mah *MedsengerAgentHandler) SetSchedulePost(c echo.Context) error {
+	contract, err := util.GetContract(c)
+	if err != nil {
+		return err
+	}
+
+	serialNumber := c.Param("serial-number")
+
+	pillDispenser, err := mah.Db.PillDispensers().Get(serialNumber)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound)
+	}
+
+	if pillDispenser.ContractID.Int64 != int64(contract.ID) {
+		return echo.NewHTTPError(http.StatusForbidden)
+	}
+
+	offlineNotify := c.FormValue("offline-notify")
+	fmt.Println("offline-notify", offlineNotify)
+
+    for i := range pillDispenser.HWType.GetCellsCount() {
+        cellTime := c.FormValue("cell-time-"+strconv.Itoa(i))
+        fmt.Println(cellTime, i)
+    }
+
 	return c.NoContent(http.StatusOK)
 }

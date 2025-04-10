@@ -60,6 +60,20 @@ func ApiKeyGetParam(cfg *config.Server) echo.MiddlewareFunc {
 	}
 }
 
+func AgentTokenGetParam(db db.ModelsFactory) echo.MiddlewareFunc {
+    return func(next echo.HandlerFunc) echo.HandlerFunc {
+        return func(c echo.Context) error {
+			agentToken := c.QueryParam("agent_token")
+			contract, err := db.Contracts().GetByAgentToken(agentToken)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, "invalid agent token", err)
+			}
+			c.Set("contract", *contract)
+            return next(c)
+        }
+    }
+}
+
 func AgentTokenForm(db db.ModelsFactory) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

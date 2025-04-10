@@ -18,8 +18,6 @@ type Contract struct {
 	Locale              string         `db:"locale"`
 	PatientName         sql.NullString `db:"patient_name"`
 	PatientEmail        sql.NullString `db:"patient_email"`
-	ScheduleID          sql.NullString `db:"schedule_id"`
-	RefreshRateInterval sql.NullInt64  `db:"refresh_rate_interval"`
 }
 
 type Contracts interface {
@@ -73,7 +71,7 @@ func (c *contracts) NewContract(contractId, clinicId int, agentToken, patientAge
 
 func (c *contracts) UpdateContractWithPatientData(contractId int, patientName, patientEmail string) error {
 	const query = `
-        UPDATE contract SET (patient_name = $1, patient_email = $2) WHERE id = $3
+        UPDATE contract SET patient_name = $1, patient_email = $2 WHERE id = $3
     `
 	_, err := c.db.Exec(query, patientName, patientEmail, contractId)
 	return err

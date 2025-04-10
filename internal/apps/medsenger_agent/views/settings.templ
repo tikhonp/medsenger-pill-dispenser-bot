@@ -5,6 +5,7 @@ import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 
 templ ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract) {
 	<p>SN: { pd.SerialNumber }</p>
+	<p><a href={ templ.URL("/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken) }>Настроить расписание</a></p>
 	<form hx-delete="/agent/contract-pill-dispenser" hx-target={ "#conneced-pill-dispenser-" + pd.SerialNumber } hx-swap="outerHTML">
 		@bviews.AgentToken(contract)
 		<input type="hidden" name="serial-number" value={ pd.SerialNumber }/>

@@ -22,8 +22,14 @@ create table pill_dispenser (
 );
 
 create table schedule (
-    id integer primary key autoincrement,
-    is_offline_notifications_allowed bool not null
+    is_offline_notifications_allowed bool not null,
+    refresh_rate_interval integer, -- durations in seconds
+    contract_id integer not null,
+    pill_dispenser_sn varchar(255) not null,
+    created_at datetime default current_timestamp not null,
+    foreign key(contract_id) references contract(id),
+    foreign key(pill_dispenser_sn) references pill_dispenser(serial_number),
+    primary key(contract_id, pill_dispenser_sn)
 );
 
 create table schedule_cell (
@@ -43,9 +49,6 @@ create table contract (
     locale varchar(5) not null,
     patient_name varchar(255),
     patient_email varchar(255),
-    schedule_id integer,
-    refresh_rate_interval integer, -- durations in seconds
-    foreign key (schedule_id) references schedule(id)
 );
 -- +goose StatementEnd
 
