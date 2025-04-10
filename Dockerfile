@@ -16,7 +16,7 @@ RUN echo $SOURCE_COMMIT > /src/release.txt
 ARG TARGETARCH
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
-    PKG_CONFIG_PATH=/srv/openalpr/src/build GOARCH=$TARGETARCH go build -o /bin/manage ./cmd/manage/
+    GOARCH=$TARGETARCH go build -o /bin/manage ./cmd/manage/
 COPY . .
 CMD ["air"]
 

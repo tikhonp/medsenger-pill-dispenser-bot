@@ -16,7 +16,9 @@ create table pill_dispenser (
     serial_number   varchar(255) primary key not null,
     hw_type_id      varchar(255) not null,
     last_fetch_time datetime default null,
-    foreign key(hw_type_id) references hardware_type(id)
+    contract_id int default null,
+    foreign key(hw_type_id) references hardware_type(id),
+    foreign key(contract_id) references contract(id)
 );
 
 create table schedule (
@@ -27,20 +29,22 @@ create table schedule (
 create table schedule_cell (
     id integer primary key autoincrement,
     time datetime,
-    schedule_id integer,
+    schedule_id integer not null,
     foreign key (schedule_id) references schedule(id)
 );
 
 create table contract (
     id integer primary key not null,
     is_active boolean not null,
-    agent_token varchar(255),
+    clinic_id integer not null,
+    agent_token varchar(255) not null,
+    patient_agent_token varchar(255) not null,
+    doctor_agent_token varchar(255) not null,
+    locale varchar(5) not null,
     patient_name varchar(255),
     patient_email varchar(255),
-    locale varchar(5) null,
-    pill_dispenser_sn varchar(255),
     schedule_id integer,
-    foreign key (pill_dispenser_sn) references pill_dispenser(serial_number),
+    refresh_rate_interval integer, -- durations in seconds
     foreign key (schedule_id) references schedule(id)
 );
 -- +goose StatementEnd

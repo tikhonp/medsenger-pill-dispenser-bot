@@ -1,9 +1,49 @@
 package views
 
 import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
+import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 
-templ Settings() {
+templ ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract) {
+	<p>SN: { pd.SerialNumber }</p>
+	<form hx-delete="/agent/contract-pill-dispenser" hx-target={ "#conneced-pill-dispenser-" + pd.SerialNumber } hx-swap="outerHTML">
+		@bviews.AgentToken(contract)
+		<input type="hidden" name="serial-number" value={ pd.SerialNumber }/>
+		<button type="submit">Отвязать</button>
+	</form>
+}
+
+templ PillDispensersList(pillDispensers []models.PillDispenser, contract *models.Contract, errors string) {
+	if len(pillDispensers) > 0 {
+		<h2>Подключенные таблетницы</h2>
+		for _, pd := range pillDispensers {
+			<div id={ "conneced-pill-dispenser-" + pd.SerialNumber }>
+				@ConnectedPillDispenser(pd, contract)
+			</div>
+		}
+	} else {
+		<p>Нет подключенных таблетниц</p>
+	}
+	<br/>
+	<br/>
+	<h3>Привязать устройство</h3>
+	if errors != "" {
+		<p><b>ОШИБКА: { errors }</b></p>
+	}
+	<form hx-post="/agent/contract-pill-dispenser" hx-target="#pill-dispensers-list">
+		<label>
+			Serial Number
+			<input type="text" name="serial-number" required/>
+		</label>
+		@bviews.AgentToken(contract)
+		<button type="submit">Добавить устройство</button>
+	</form>
+}
+
+templ Settings(contract *models.Contract, connectedPillDispensers []models.PillDispenser) {
 	@bviews.Base("Настройки") {
-		<p>Лол</p>
+		<h1>Пациент { contract.PatientName.String }</h1>
+		<div id="pill-dispensers-list">
+			@PillDispensersList(connectedPillDispensers, contract, "")
+		</div>
 	}
 }

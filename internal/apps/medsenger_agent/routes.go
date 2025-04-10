@@ -22,4 +22,8 @@ func ConfigureMedsengerAgentGroup(g *echo.Group, cfg *config.Config, modelsFacto
 	g.POST("/remove", mah.Remove, util.ApiKeyJSON(cfg.Server))
 
 	g.GET("/settings", mah.SettingsGet, util.ApiKeyGetParam(cfg.Server))
+
+	agentGroup := g.Group("/agent", util.AgentTokenForm(mah.Db))
+	agentGroup.POST("/contract-pill-dispenser", mah.AddContractPillDispenser)
+	agentGroup.DELETE("/contract-pill-dispenser", mah.RemoveContractPillDispenser)
 }
