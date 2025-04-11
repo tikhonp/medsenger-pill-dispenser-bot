@@ -3,11 +3,14 @@ package util
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 )
 
 type apiKeyModel struct {
@@ -55,4 +58,40 @@ func ApiKeyGetParam(cfg *config.Server) echo.MiddlewareFunc {
 			return next(c)
 		}
 	}
+}
+
+func AgentTokenGetParam(db db.ModelsFactory) echo.MiddlewareFunc {
+    return func(next echo.HandlerFunc) echo.HandlerFunc {
+        return func(c echo.Context) error {
+			agentToken := c.QueryParam("agent_token")
+			contract, err := db.Contracts().GetByAgentToken(agentToken)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, "invalid agent token", err)
+			}
+			c.Set("contract", *contract)
+            return next(c)
+        }
+    }
+}
+
+func AgentTokenForm(db db.ModelsFactory) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			agentToken := c.FormValue("agent-token")
+			contract, err := db.Contracts().GetByAgentToken(agentToken)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, "invalid agent token", err)
+			}
+			c.Set("contract", *contract)
+			return next(c)
+		}
+	}
+}
+
+func GetContract(c echo.Context) (*models.Contract, error) {
+	contract, ok := c.Get("contract").(models.Contract)
+	if ok {
+		return &contract, nil
+	}
+	return nil, errors.New("no contract in context")
 }

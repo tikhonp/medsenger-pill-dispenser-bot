@@ -1,9 +1,5 @@
 package handlers
 
-import (
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
-)
+import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 
-type PillDispenserHandler struct {
-	Db db.ModelsFactory
-}
+type PillDispenserHandler util.Dependencies

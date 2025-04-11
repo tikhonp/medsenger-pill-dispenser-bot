@@ -2,34 +2,33 @@ package main
 
 import (
 	"context"
-	"log"
-	"os"
 
 	"github.com/TikhonP/maigo"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/router"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 )
 
-func main() {
+func initDependencies() util.Dependencies {
 	// Read the configuration from the pkl file
 	cfg, err := config.LoadFromPath(context.Background(), "config.pkl")
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
+	util.AssertNoErr(err)
 
 	// Connect to the database
 	modelsFactory, err := db.Connect(cfg.Db)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
+	util.AssertNoErr(err)
 
 	maigoClient := maigo.Init(cfg.Server.MedsengerAgentKey)
 
+	return util.NewDependencies(cfg, maigoClient, modelsFactory)
+}
+
+func main() {
+	deps := initDependencies()
+
 	// Setup server
-	r := router.New(cfg)
-	router.RegisterRoutes(r, cfg, modelsFactory, maigoClient)
-	r.Logger.Fatal(router.Start(r, cfg))
+	r := router.New(deps.Cfg)
+	router.RegisterRoutes(r, deps)
+	r.Logger.Fatal(router.Start(r, deps.Cfg))
 }
