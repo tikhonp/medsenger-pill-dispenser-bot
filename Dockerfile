@@ -18,6 +18,7 @@ CMD ["air", "-c", ".air.toml"]
 FROM golang:${GOVERSION}-alpine AS prod
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 ARG TARGETARCH
+ARG PKL_VERSION
 ADD --chmod=111 "https://github.com/apple/pkl/releases/download/${PKL_VERSION}/pkl-alpine-linux-${TARGETARCH}" /bin/pkl
 ARG SOURCE_COMMIT
 RUN echo $SOURCE_COMMIT > release.txt
