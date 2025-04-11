@@ -10,7 +10,7 @@ import (
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 )
 
-func main() {
+func initDependencies() util.Dependencies {
 	// Read the configuration from the pkl file
 	cfg, err := config.LoadFromPath(context.Background(), "config.pkl")
 	util.AssertNoErr(err)
@@ -21,8 +21,14 @@ func main() {
 
 	maigoClient := maigo.Init(cfg.Server.MedsengerAgentKey)
 
+	return util.NewDependencies(cfg, maigoClient, modelsFactory)
+}
+
+func main() {
+	deps := initDependencies()
+
 	// Setup server
-	r := router.New(cfg)
-	router.RegisterRoutes(r, cfg, modelsFactory, maigoClient)
-	r.Logger.Fatal(router.Start(r, cfg))
+	r := router.New(deps.Cfg)
+	router.RegisterRoutes(r, deps)
+	r.Logger.Fatal(router.Start(r, deps.Cfg))
 }

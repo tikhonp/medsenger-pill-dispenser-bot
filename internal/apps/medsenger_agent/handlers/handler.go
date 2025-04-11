@@ -1,11 +1,5 @@
 package handlers
 
-import (
-	"github.com/TikhonP/maigo"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
-)
+import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 
-type MedsengerAgentHandler struct {
-	MaigoClient *maigo.Client
-	Db          db.ModelsFactory
-}
+type MedsengerAgentHandler util.Dependencies

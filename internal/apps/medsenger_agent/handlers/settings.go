@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"fmt"
+	"database/sql"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsenger_agent/views"
@@ -18,11 +19,13 @@ func (mah *MedsengerAgentHandler) SettingsGet(c echo.Context) error {
 	}
 	contractID, err := strconv.Atoi(contractIdStr)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid contract id", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid contract id")
 	}
 	contract, err := mah.Db.Contracts().Get(contractID)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, "contract not found", err)
+	if err == sql.ErrNoRows {
+		return echo.NewHTTPError(http.StatusNotFound, "contract not found")
+	} else if err != nil {
+		return err
 	}
 	pillDispensers, err := mah.Db.PillDispensers().GetAllByContractID(contractID)
 	if err != nil {
@@ -74,41 +77,79 @@ func (mah *MedsengerAgentHandler) RemoveContractPillDispenser(c echo.Context) er
 	return c.NoContent(http.StatusOK)
 }
 
-func (mah *MedsengerAgentHandler) SetScheduleGet(c echo.Context) error {
+func (mah *MedsengerAgentHandler) pillDispenserPagesCommon(c echo.Context) (*models.Contract, *models.PillDispenser, error) {
+	contract, err := util.GetContract(c)
+	if err != nil {
+		return nil, nil, err
+	}
 	serialNumber := c.Param("serial-number")
-
 	pillDispenser, err := mah.Db.PillDispensers().Get(serialNumber)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound)
+		return nil, nil, echo.NewHTTPError(http.StatusNotFound)
 	}
+	if pillDispenser.ContractID.Int64 != int64(contract.ID) {
+		return nil, nil, echo.NewHTTPError(http.StatusForbidden)
+	}
+	return contract, pillDispenser, nil
+}
 
-	return util.TemplRender(c, views.ScheduleSettings(pillDispenser))
+func (mah *MedsengerAgentHandler) SetScheduleGet(c echo.Context) error {
+	contract, pillDispenser, err := mah.pillDispenserPagesCommon(c)
+	if err != nil {
+		return err
+	}
+	schedules, err := mah.Db.Schedules().GetSchedules(pillDispenser.SerialNumber, int(pillDispenser.ContractID.Int64))
+	if err != nil {
+		return err
+	}
+    println(len(schedules))
+	return util.TemplRender(c, views.ScheduleSettings(pillDispenser, schedules, contract))
 }
 
 func (mah *MedsengerAgentHandler) SetSchedulePost(c echo.Context) error {
-	contract, err := util.GetContract(c)
+	contract, pillDispenser, err := mah.pillDispenserPagesCommon(c)
 	if err != nil {
 		return err
 	}
 
-	serialNumber := c.Param("serial-number")
+	schdl := models.NewSchedule(pillDispenser)
 
-	pillDispenser, err := mah.Db.PillDispensers().Get(serialNumber)
+	offlineNotify := c.FormValue("offline-notify") == "on"
+	schdl.Schedule.IsOfflineNotificationsAllowed = offlineNotify
+
+	refreshRateIntervalStr := c.FormValue("refresh-rate")
+	refreshRateInterval, err := strconv.Atoi(refreshRateIntervalStr)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound)
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid refresh-rate")
+	}
+	schdl.Schedule.RefreshRateInterval = sql.NullInt64{Valid: true, Int64: int64(refreshRateInterval)}
+
+	schdl.Cells = make([]models.ScheduleCell, pillDispenser.HWType.GetCellsCount())
+	for i := range pillDispenser.HWType.GetCellsCount() {
+		cellTimeStr := c.FormValue("cell-time-" + strconv.Itoa(i))
+		cellTime, err := time.Parse("2006-01-02T15:04", cellTimeStr)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
+		}
+		schdl.Cells[i] = models.ScheduleCell{
+			Index: i,
+			Time:  sql.NullTime{Valid: true, Time: cellTime},
+		}
 	}
 
-	if pillDispenser.ContractID.Int64 != int64(contract.ID) {
-		return echo.NewHTTPError(http.StatusForbidden)
-	}
-
-	offlineNotify := c.FormValue("offline-notify")
-	fmt.Println("offline-notify", offlineNotify)
-
-    for i := range pillDispenser.HWType.GetCellsCount() {
-        cellTime := c.FormValue("cell-time-"+strconv.Itoa(i))
-        fmt.Println(cellTime, i)
+	newSchedule, err := mah.Db.Schedules().NewSchedule(schdl)
+    if err != nil {
+        return err
     }
 
-	return c.NoContent(http.StatusOK)
+	return util.TemplRender(c, views.Schedule(*newSchedule, pillDispenser, contract, false))
+}
+
+func (mah *MedsengerAgentHandler) GetNewScheduleForm(c echo.Context) error {
+	contract, pillDispenser, err := mah.pillDispenserPagesCommon(c)
+	if err != nil {
+		return err
+	}
+	schdl := models.NewSchedule(pillDispenser)
+	return util.TemplRender(c, views.Schedule(schdl, pillDispenser, contract, true))
 }

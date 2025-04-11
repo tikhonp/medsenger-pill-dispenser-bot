@@ -19,7 +19,7 @@ type initModel struct {
 }
 
 func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractId int, ctx echo.Context) {
-	ci, err := mah.MaigoClient.GetContractInfo(contractId)
+	ci, err := mah.Maigo.GetContractInfo(contractId)
 	if err != nil {
 		// sentry.CaptureException(err)
 		ctx.Logger().Error(err)
@@ -32,7 +32,7 @@ func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractId int, ctx ec
 		ctx.Logger().Error(err)
 		return
 	}
-	_, err = mah.MaigoClient.SendMessage(
+	_, err = mah.Maigo.SendMessage(
 		contractId,
 		"Подключен агент для таблетницы",
 		// maigo.WithAction("Настроить", "/setup", maigo.Action),

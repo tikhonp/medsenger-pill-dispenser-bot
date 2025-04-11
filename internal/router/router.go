@@ -3,14 +3,12 @@ package router
 import (
 	"fmt"
 
-	"github.com/TikhonP/maigo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsenger_agent"
 	pilldispenser "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/pill_dispenser"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 )
 
@@ -48,9 +46,9 @@ func New(cfg *config.Config) *echo.Echo {
 	return e
 }
 
-func RegisterRoutes(e *echo.Echo, cfg *config.Config, modelsFactory db.ModelsFactory, maigoClient *maigo.Client) {
-	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group(""), cfg, modelsFactory, maigoClient)
-    pilldispenser.ConfigurePillDispenserGroup(e.Group("/pill-dispenser"), cfg, modelsFactory, maigoClient)
+func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
+	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group(""), deps)
+	pilldispenser.ConfigurePillDispenserGroup(e.Group("/pill-dispenser"), deps)
 }
 
 func Start(e *echo.Echo, cfg *config.Config) error {
