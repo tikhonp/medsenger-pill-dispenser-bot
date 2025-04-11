@@ -38,7 +38,7 @@ create table schedule_cell (
     schedule_id integer not null,
     time datetime,
     foreign key (schedule_id) references schedule(id),
-    primary key(schedule_id, id)
+    primary key(schedule_id, idx)
 );
 
 create table contract (
