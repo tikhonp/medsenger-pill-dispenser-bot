@@ -1,19 +1,20 @@
+SOURCE_COMMIT_SHA := $(shell git rev-parse HEAD)
+
+ENVS := SOURCE_COMMIT=${SOURCE_COMMIT_SHA} COMPOSE_BAKE=true
+
+
 .PHONY: run dev build-dev prod fprod logs-prod go-to-server-container pkl-gen db-status db-up db-down db-reset templ
 
 run: dev
 
-dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
 dev:
-	docker compose -f compose.yaml up
+	${ENVS} docker compose -f compose.yaml up
 
-build-dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD) 
-build-dev: export COMPOSE_BAKE=true
 build-dev:
-	docker compose -f compose.yaml up --build
+	${ENVS} docker compose -f compose.yaml up --build
 
-prod: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
 prod:
-	docker compose -f compose.prod.yaml up --build -d
+	${ENVS} docker compose -f compose.prod.yaml up --build -d
 
 fprod:
 	docker compose -f compose.prod.yaml down

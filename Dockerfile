@@ -1,35 +1,29 @@
 # syntax=docker/dockerfile:1
 
 ARG GOVERSION=1.24.2
+ARG PKL_VERSION=0.28.1
 
-FROM golang:${GOVERSION}-bookworm AS dev
-WORKDIR /src
-ADD --chmod=111 "https://github.com/apple/pkl/releases/download/0.28.1/pkl-linux-aarch64" /usr/bin/pkl
+FROM golang:${GOVERSION} AS dev
 RUN go install "github.com/air-verse/air@latest"
 RUN go install "github.com/pressly/goose/v3/cmd/goose@latest"
 RUN go install "github.com/apple/pkl-go/cmd/pkl-gen-go@latest"
 RUN go install "github.com/a-h/templ/cmd/templ@latest"
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify
-ARG SOURCE_COMMIT
-RUN echo $SOURCE_COMMIT > /src/release.txt
-ARG TARGETARCH
-RUN --mount=type=cache,target=/go/pkg/mod/ \
-    --mount=type=bind,target=. \
-    GOARCH=$TARGETARCH go build -o /bin/manage ./cmd/manage/
-COPY . .
-CMD ["air"]
-
-
-FROM golang:${GOVERSION} AS prod
+ARG PKL_VERSION
+RUN curl -L -o /usr/bin/pkl "https://github.com/apple/pkl/releases/download/${PKL_VERSION}/pkl-linux-$(uname -m)" && chmod +x /usr/bin/pkl
 WORKDIR /src
-ADD --chmod=111 'https://github.com/apple/pkl/releases/download/0.28.1/pkl-alpine-linux-amd64' /bin/pkl
+RUN --mount=type=cache,target=/go/pkg/mod/ --mount=type=bind,target=.
+CMD ["air", "-c", ".air.toml"]
+
+
+FROM golang:${GOVERSION}-alpine AS prod
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+ARG TARGETARCH
+ADD --chmod=111 "https://github.com/apple/pkl/releases/download/${PKL_VERSION}/pkl-alpine-linux-${TARGETARCH}" /bin/pkl
 ARG SOURCE_COMMIT
 RUN echo $SOURCE_COMMIT > release.txt
-ARG TARGETARCH
+WORKDIR /src
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-    --mount=type=bind,target=.\
+    --mount=type=bind,target=. \
     GOARCH=$TARGETARCH go build -o /bin/manage ./cmd/manage/
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \

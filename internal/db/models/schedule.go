@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type Schedule struct {
@@ -14,3 +16,13 @@ type Schedule struct {
 }
 
 type Schedules interface{}
+
+type schedule struct {
+	db *sqlx.DB
+}
+
+func NewSchedules(db *sqlx.DB) Schedules {
+	return &schedule{
+		db: db,
+	}
+}
