@@ -53,7 +53,7 @@ func (mah *MedsengerAgentHandler) Init(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	err := mah.Db.Contracts().NewContract(m.ContractId, m.AgentToken, m.Locale)
+	err := mah.Db.Contracts().NewContract(m.ContractId, m.ClinicId, m.AgentToken, m.PatientAgentToken, m.DoctorAgentToken, m.Locale)
 	if err != nil {
 		return err
 	}

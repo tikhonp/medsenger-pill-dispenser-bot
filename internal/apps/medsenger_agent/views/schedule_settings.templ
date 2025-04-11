@@ -1,0 +1,32 @@
+package views
+
+import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
+import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
+import "strconv"
+import "time"
+
+templ ScheduleSettings(pillDispenser *models.PillDispenser) {
+	@bviews.Base("Настройки") {
+		<h1>Настройка таблетницы SN: { pillDispenser.SerialNumber }</h1>
+		<form method="">
+			<fieldset>
+				<legend>Настройки расписания таблетницы</legend>
+				<input type="checkbox" id="offline-notify" name="offline-notify" checked/>
+				<label for="offline-notify">Уведомлять пользователя без подключения к интернету</label>
+				// TODO: add refresh rate param
+			</fieldset>
+			for i := range pillDispenser.HWType.GetCellsCount() {
+                <p>
+				<label for={ "cell-time-" + strconv.Itoa(i) }>Ячейка намер { strconv.Itoa(i) }</label>
+				<input
+					type="datetime-local"
+					id={ "cell-time-" + strconv.Itoa(i) }
+					name={ "cell-time-" + strconv.Itoa(i) }
+					min={ time.Now().Format("2006-01-02T15:04") }
+				/>
+                </p>
+			}
+			<button type="submit">Сохранить</button>
+		</form>
+	}
+}
