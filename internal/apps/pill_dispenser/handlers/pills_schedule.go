@@ -2,43 +2,55 @@ package handlers
 
 import (
 	"encoding/binary"
-	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 )
 
 const ContentTypeOctetStream = "application/octet-stream"
 
-func (pdh *PillDispenserHandler) GetSchedule(c echo.Context) error {
-	serialNumber := c.QueryParam("serial_number")
-	if serialNumber != "" {
-		fmt.Println("Scheduler request from:", serialNumber)
-	}
-
-	var cellsCount = 4
-	cellsCountStr := c.QueryParam("cells_count")
-	if cellsCountP, err := strconv.Atoi(cellsCountStr); err == nil {
-		cellsCount = cellsCountP
-	}
+func encodeSchedule(s *models.ScheduleData) []byte {
+	cellsCount := len(s.Cells)
 
 	// (uint32, uint32, uint8) * cellcount  + uint32
 	out := make([]byte, 0, cellsCount*(4+4+1)+4)
-	now := time.Now()
-	for i := range cellsCount {
+	for _, cell := range s.Cells {
 		// make array of timestamps from now and every minute after
-		timestamp_start := uint32(now.Add(time.Minute * time.Duration(i)).Unix())
-		timestamp_end := uint32(now.Add(time.Minute * time.Duration(i)).Add(time.Second * 30).Unix())
-		meta := uint8(1)
+		timestamp_start := uint32(cell.Time.Time.Unix())
+		timestamp_end := uint32(cell.Time.Time.Add(time.Minute).Add(time.Second * 30).Unix())
 		out = binary.LittleEndian.AppendUint32(out, timestamp_start)
 		out = binary.LittleEndian.AppendUint32(out, timestamp_end)
-		out = append(out, meta)
+		if s.Schedule.IsOfflineNotificationsAllowed {
+			out = append(out, 1)
+		} else {
+			out = append(out, 0)
+		}
 	}
 
-	var refreshRateSec uint32 = 60 * 2
+	var refreshRateSec = uint32(s.Schedule.RefreshRateInterval.Int64)
 	out = binary.LittleEndian.AppendUint32(out, refreshRateSec)
 
-	return c.Blob(http.StatusOK, ContentTypeOctetStream, out)
+	return out
+}
+
+func (pdh *PillDispenserHandler) GetSchedule(c echo.Context) error {
+	serialNumber := c.QueryParam("serial_number")
+	if serialNumber == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "provide serial number")
+	}
+
+	schdl, err := pdh.Db.Schedules().GetScheduleForSN(serialNumber)
+	if err == models.ErrNoSchedule {
+		// TODO: process empty schedule
+		return err
+	}
+	if err != nil {
+		return err
+	}
+
+	data := encodeSchedule(schdl)
+
+	return c.Blob(http.StatusOK, ContentTypeOctetStream, data)
 }

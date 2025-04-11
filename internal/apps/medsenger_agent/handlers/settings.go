@@ -102,7 +102,6 @@ func (mah *MedsengerAgentHandler) SetScheduleGet(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-    println(len(schedules))
 	return util.TemplRender(c, views.ScheduleSettings(pillDispenser, schedules, contract))
 }
 

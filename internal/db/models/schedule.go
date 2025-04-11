@@ -2,9 +2,14 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+)
+
+var (
+	ErrNoSchedule = errors.New("no schedule set for specified serial number")
 )
 
 const DefaultRefreshRateInterval int64 = 60 * 60 // seconds
@@ -20,6 +25,9 @@ type Schedule struct {
 
 type Schedules interface {
 	GetSchedules(pillDispenserSN string, contractID int) ([]ScheduleData, error)
+	// GetScheduleForSN fetches schedule for pill dispenser with specified serial number
+	//  returns ErrNoSchedule
+	GetScheduleForSN(serialNumber string) (*ScheduleData, error)
 	NewSchedule(schedule ScheduleData) (*ScheduleData, error)
 }
 
@@ -52,6 +60,36 @@ func (s *schedule) GetSchedules(pillDispenserSN string, contractID int) ([]Sched
 		})
 	}
 	return schedulesData, nil
+}
+
+func (s *schedule) GetScheduleForSN(serialNumber string) (*ScheduleData, error) {
+	var schedule Schedule
+	query := `
+    SELECT s.* FROM schedule s
+    JOIN pill_dispenser pd ON s.pill_dispenser_sn = pd.serial_number AND s.contract_id = pd.contract_id
+    WHERE pd.serial_number = $1
+    ORDER BY created_at DESC
+    LIMIT 1
+    `
+	err := s.db.Get(&schedule, query, serialNumber)
+    if err == sql.ErrNoRows {
+        return nil, ErrNoSchedule
+    }
+	if err != nil {
+		return nil, err
+	}
+	var cells []ScheduleCell
+	query = `
+    SELECT * FROM schedule_cell WHERE schedule_id = $1 ORDER BY idx
+    `
+	err = s.db.Select(&cells, query, schedule.ID)
+	if err != nil {
+		return nil, err
+	}
+	return &ScheduleData{
+		Schedule: schedule,
+		Cells:    cells,
+	}, nil
 }
 
 func (s *schedule) NewSchedule(schedule ScheduleData) (*ScheduleData, error) {
