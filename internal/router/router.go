@@ -30,20 +30,8 @@ func New(cfg *config.Config) *echo.Echo {
 	} else {
 		e.Use(middleware.Logger())
 	}
-	// e.Use(middleware.Recover())
 
-	e.Use(middleware.CORSWithConfig(
-		middleware.CORSConfig{
-			AllowCredentials: true,
-			AllowOrigins:     []string{"https://medsenger.ru"},
-			AllowHeaders: []string{
-				echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept,
-				echo.HeaderContentLength, echo.HeaderAcceptEncoding,
-				echo.HeaderCacheControl, echo.HeaderXRequestedWith,
-			},
-			AllowMethods: []string{echo.GET, echo.POST, echo.DELETE, echo.OPTIONS, echo.PUT},
-		},
-	))
+	e.Use(middleware.CORS())
 
 	e.Validator = util.NewDefaultValidator()
 

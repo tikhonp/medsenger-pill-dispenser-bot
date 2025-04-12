@@ -68,7 +68,7 @@ func (s *schedule) GetScheduleForSN(serialNumber string) (*ScheduleData, error) 
     SELECT s.* FROM schedule s
     JOIN pill_dispenser pd ON s.pill_dispenser_sn = pd.serial_number AND s.contract_id = pd.contract_id
     WHERE pd.serial_number = $1
-    ORDER BY created_at DESC
+    ORDER BY created_at ASC
     LIMIT 1
     `
 	err := s.db.Get(&schedule, query, serialNumber)
@@ -106,7 +106,9 @@ func (s *schedule) NewSchedule(schedule ScheduleData) (*ScheduleData, error) {
 		if err != nil {
 			return &schedule, err
 		}
-	}
+	} else {
+        return &schedule, sql.ErrNoRows
+    }
 	err = rows.Close()
 	if err != nil {
 		return &schedule, err
