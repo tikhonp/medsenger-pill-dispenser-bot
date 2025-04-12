@@ -8,7 +8,7 @@ import (
 
 // Connect to the database and return a connection.
 func Connect(cfg *config.Database) (ModelsFactory, error) {
-    db, err := sqlx.Connect("sqlite3", cfg.DbFilePath)
+	db, err := sqlx.Connect("sqlite3", cfg.DbFilePath)
 	if err != nil {
 		return nil, err
 	}

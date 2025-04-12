@@ -9,9 +9,9 @@ type ScheduleCell struct {
 }
 
 func NewCellsSet(n, scheduleID int) []ScheduleCell {
-    var cells = make([]ScheduleCell, 0, n)
-    for i := range n {
-       cells = append(cells, ScheduleCell{Index: i, ScheduleID: scheduleID})
-    }
-    return cells
+	var cells = make([]ScheduleCell, 0, n)
+	for i := range n {
+		cells = append(cells, ScheduleCell{Index: i, ScheduleID: scheduleID})
+	}
+	return cells
 }

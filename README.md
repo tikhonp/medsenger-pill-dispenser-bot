@@ -20,7 +20,7 @@ or
 make dev
 ```
 
-or 
+or
 
 ```sh
 make build-dev # preferred if config files were changed, so it rebuilds image
@@ -42,7 +42,7 @@ goose -dir=internal/db/migrations create <migration-name> sql
 Other db shortcuts:
 
 ```sh
-make db-reset # reset all migrations (gooose reset)
+make db-reset # reset all migrations (goose reset)
 make db-down  # goose down
 ```
 

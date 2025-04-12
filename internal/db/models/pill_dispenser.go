@@ -60,7 +60,7 @@ func (pd *pillDispensers) New(serialNumber string, hwType HardwareType) error {
 
 func (pd *pillDispensers) GetContractID(serialNumber string) (int, error) {
 	var contractID int
-	err := pd.db.QueryRow("SELECT contract_id FROM pill_dispenser WHERE serial_numner = $1", serialNumber).Scan(&contractID)
+	err := pd.db.QueryRow("SELECT contract_id FROM pill_dispenser WHERE serial_number = $1", serialNumber).Scan(&contractID)
 	return contractID, err
 }
 
