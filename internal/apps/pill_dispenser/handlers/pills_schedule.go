@@ -12,6 +12,15 @@ import (
 
 const ContentTypeOctetStream = "application/octet-stream"
 
+func emptySchedule(cellsCount int) []byte {
+	out := make([]byte, cellsCount*(4+4+1), cellsCount*(4+4+1)+4)
+
+	var refreshRateSec = uint32(models.DefaultRefreshRateInterval)
+	out = binary.LittleEndian.AppendUint32(out, refreshRateSec)
+
+	return out
+}
+
 func encodeSchedule(s *models.ScheduleData) []byte {
 	cellsCount := len(s.Cells)
 
@@ -44,8 +53,12 @@ func (pdh *PillDispenserHandler) GetSchedule(c echo.Context) error {
 
 	schedule, err := pdh.Db.Schedules().GetScheduleForSN(serialNumber)
 	if errors.Is(err, models.ErrNoSchedule) {
-		// TODO: process empty schedule
-		return err
+		pillDispenser, err := pdh.Db.PillDispensers().Get(serialNumber)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "pill dispenser not found")
+		}
+
+		return c.Blob(http.StatusOK, ContentTypeOctetStream, emptySchedule(pillDispenser.HWType.GetCellsCount()))
 	}
 	if err != nil {
 		return err
