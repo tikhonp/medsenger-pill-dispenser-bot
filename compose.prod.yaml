@@ -20,4 +20,4 @@ services:
 
 volumes:
   db-data:
-    name: "pilldispenser-db-data"
+    name: "pill-dispenser-db-data"

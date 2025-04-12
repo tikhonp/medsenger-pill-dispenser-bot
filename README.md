@@ -6,7 +6,7 @@ Agent for managing telepat smart pill dispenser scheduling.
 
 1. Install __docker__ and __make__
 
-2. Create `config.pkl` file in project root folder amendig `pkl/congig.pkl` scheme
+2. Create `config.pkl` file in project root folder amending `pkl/congig.pkl` scheme
 
 ### Run Development
 

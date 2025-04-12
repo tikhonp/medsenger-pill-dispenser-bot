@@ -14,7 +14,7 @@ import (
 type command string
 
 const (
-	// PrintDbString prints the database configurtion string
+	// PrintDbString prints the database configuration string
 	// for sql connection
 	PrintDbString command = "print-db-string"
 
@@ -91,6 +91,6 @@ func main() {
 	case AddPillDispenser:
 		addPillDispenser(cfg, manageConfig.serialNumber, manageConfig.hwType)
 	default:
-		fmt.Println("Incvalid arguments")
+		fmt.Println("Invalid arguments")
 	}
 }

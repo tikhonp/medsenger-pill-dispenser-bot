@@ -23,8 +23,8 @@ func (ht *HardwareType) String() string {
 	return string(*ht)
 }
 
-func (ht HardwareType) GetCellsCount() int {
-	switch ht {
+func (ht *HardwareType) GetCellsCount() int {
+	switch *ht {
 	case HardwareType2x2:
 		return 4
 	case HardwareType4x7:

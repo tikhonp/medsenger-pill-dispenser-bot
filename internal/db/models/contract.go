@@ -9,15 +9,15 @@ import (
 // Contract represents Medsenger contract.
 // Create on agent /init and persist during agent lifecycle.
 type Contract struct {
-	ID                  int            `db:"id"`
-	IsActive            bool           `db:"is_active"`
-	ClinicID            int            `db:"clinic_id"`
-	AgentToken          string         `db:"agent_token"`
-	PatientAgentToken   string         `db:"patient_agent_token"`
-	DoctorAgentToken    string         `db:"doctor_agent_token"`
-	Locale              string         `db:"locale"`
-	PatientName         sql.NullString `db:"patient_name"`
-	PatientEmail        sql.NullString `db:"patient_email"`
+	ID                int            `db:"id"`
+	IsActive          bool           `db:"is_active"`
+	ClinicID          int            `db:"clinic_id"`
+	AgentToken        string         `db:"agent_token"`
+	PatientAgentToken string         `db:"patient_agent_token"`
+	DoctorAgentToken  string         `db:"doctor_agent_token"`
+	Locale            string         `db:"locale"`
+	PatientName       sql.NullString `db:"patient_name"`
+	PatientEmail      sql.NullString `db:"patient_email"`
 }
 
 type Contracts interface {
@@ -37,7 +37,7 @@ type Contracts interface {
 	// Equivalent to DELETE FROM contracts WHERE id = ?.
 	MarkInactiveContractWithId(id int) error
 
-	// GetContract get contract data by id
+	// Get contract data by id
 	Get(id int) (*Contract, error)
 
 	// GetByAgentToken get contract by agent token

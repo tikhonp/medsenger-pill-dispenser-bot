@@ -48,14 +48,14 @@ func (s *schedule) GetSchedules(pillDispenserSN string, contractID int) ([]Sched
 		return nil, err
 	}
 	var schedulesData []ScheduleData
-	for _, schd := range schedules {
+	for _, schedule := range schedules {
 		var cells []ScheduleCell
-		err := s.db.Select(&cells, "SELECT * FROM schedule_cell WHERE schedule_id = $1 ORDER BY idx", schd.ID)
+		err := s.db.Select(&cells, "SELECT * FROM schedule_cell WHERE schedule_id = $1 ORDER BY idx", schedule.ID)
 		if err != nil {
 			return nil, err
 		}
 		schedulesData = append(schedulesData, ScheduleData{
-			Schedule: schd,
+			Schedule: schedule,
 			Cells:    cells,
 		})
 	}
@@ -72,9 +72,9 @@ func (s *schedule) GetScheduleForSN(serialNumber string) (*ScheduleData, error) 
     LIMIT 1
     `
 	err := s.db.Get(&schedule, query, serialNumber)
-    if err == sql.ErrNoRows {
-        return nil, ErrNoSchedule
-    }
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNoSchedule
+	}
 	if err != nil {
 		return nil, err
 	}
