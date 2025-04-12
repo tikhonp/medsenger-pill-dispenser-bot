@@ -3,7 +3,7 @@ SOURCE_COMMIT_SHA := $(shell git rev-parse HEAD)
 ENVS := SOURCE_COMMIT=${SOURCE_COMMIT_SHA} COMPOSE_BAKE=true
 
 
-.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container pkl-gen db-status db-up db-down db-reset templ
+.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container pkl-gen db-status db-up db-down db-reset templ add-pill-dispenser
 
 run: dev
 
@@ -42,3 +42,6 @@ pkl-gen:
 
 templ:
 	docker exec -it pill-dispenser-agent templ generate
+
+add-pill-dispenser:
+	docker exec -it pill-dispenser-agent manage -c add-pill-dispenser -i
