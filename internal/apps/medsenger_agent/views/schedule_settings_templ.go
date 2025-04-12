@@ -63,9 +63,9 @@ func Schedule(s models.ScheduleData, pd *models.PillDispenser, contract *models.
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs("/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(string(templ.URL(bviews.Host + "/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/medsenger_agent/views/schedule_settings.templ`, Line: 14, Col: 100}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/medsenger_agent/views/schedule_settings.templ`, Line: 14, Col: 133}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -241,9 +241,9 @@ func ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData,
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs("/settings/set-schedule/" + pd.SerialNumber + "/new-schedule-form" + "?agent_token=" + contract.AgentToken)
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(string(templ.URL(bviews.Host + "/settings/set-schedule/" + pd.SerialNumber + "/new-schedule-form" + "?agent_token=" + contract.AgentToken)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/medsenger_agent/views/schedule_settings.templ`, Line: 48, Col: 139}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/medsenger_agent/views/schedule_settings.templ`, Line: 48, Col: 172}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {

@@ -4,9 +4,6 @@ module config
 import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.10.0#/go.pkl"
 
 class Server {
-  /// The hostname of this application.
-  host: String
-
   /// The port to listen on.
   port: UInt16
 
@@ -27,3 +24,6 @@ releaseFilePath: String
 
 db: Database
 server: Server
+
+// Host in https://example.com format
+host: String

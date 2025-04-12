@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/TikhonP/maigo"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/router"
@@ -26,6 +27,8 @@ func initDependencies() util.Dependencies {
 
 func main() {
 	deps := initDependencies()
+
+	bviews.Host = deps.Cfg.Host
 
 	// Setup server
 	r := router.New(deps.Cfg)

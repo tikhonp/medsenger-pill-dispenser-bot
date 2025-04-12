@@ -52,6 +52,6 @@ func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
 }
 
 func Start(e *echo.Echo, cfg *config.Config) error {
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 	return e.Start(addr)
 }
