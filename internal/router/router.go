@@ -34,10 +34,14 @@ func New(cfg *config.Config) *echo.Echo {
 
 	e.Use(middleware.CORSWithConfig(
 		middleware.CORSConfig{
-			// TODO: Set proper CORS configuration
-			AllowOrigins: []string{"*"},
-			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-			AllowMethods: []string{echo.GET},
+			AllowCredentials: true,
+			AllowOrigins:     []string{"https://medsenger.ru"},
+			AllowHeaders: []string{
+				echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept,
+				echo.HeaderContentLength, echo.HeaderAcceptEncoding,
+				echo.HeaderCacheControl, echo.HeaderXRequestedWith,
+			},
+			AllowMethods: []string{echo.GET, echo.POST, echo.DELETE, echo.OPTIONS, echo.PUT},
 		},
 	))
 

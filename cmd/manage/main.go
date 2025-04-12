@@ -74,10 +74,12 @@ func addPillDispenserInteractive(cfg *config.Config) {
 	var hwType models.HardwareType
 
 	fmt.Print("Serial Number: ")
-	fmt.Scanln(&serialNumber)
+	_, err := fmt.Scanln(&serialNumber)
+	util.AssertNoErr(err)
 
 	fmt.Print("Hardware Type: ")
-	fmt.Scanln(&hwType)
+	_, err = fmt.Scanln(&hwType)
+	util.AssertNoErr(err)
 
 	addPillDispenser(cfg, serialNumber, hwType)
 }
