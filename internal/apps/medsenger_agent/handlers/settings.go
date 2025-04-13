@@ -133,12 +133,12 @@ func (mah *MedsengerAgentHandler) SetSchedulePost(c echo.Context) error {
 	schedule.Cells = make([]models.ScheduleCell, pillDispenser.HWType.GetCellsCount())
 	for i := range pillDispenser.HWType.GetCellsCount() {
 		cellStartTimeStr := c.FormValue("cell-start-time-" + strconv.Itoa(i))
-		cellStartTime, err := time.ParseInLocation("2006-01-02T15:04", cellStartTimeStr, loc)
+		cellStartTime, err := time.ParseInLocation(util.HTMLInputTime, cellStartTimeStr, loc)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
 		}
 		cellEndTimeStr := c.FormValue("cell-end-time-" + strconv.Itoa(i))
-		cellEndTime, err := time.ParseInLocation("2006-01-02T15:04", cellEndTimeStr, loc)
+		cellEndTime, err := time.ParseInLocation(util.HTMLInputTime, cellEndTimeStr, loc)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
 		}
@@ -193,12 +193,12 @@ func (mah *MedsengerAgentHandler) EditSchedulePost(c echo.Context) error {
 	schedule.Cells = make([]models.ScheduleCell, pillDispenser.HWType.GetCellsCount())
 	for i := range pillDispenser.HWType.GetCellsCount() {
 		cellStartTimeStr := c.FormValue("cell-start-time-" + strconv.Itoa(i))
-		cellStartTime, err := time.ParseInLocation("2006-01-02T15:04", cellStartTimeStr, loc)
+		cellStartTime, err := time.ParseInLocation(util.HTMLInputTime, cellStartTimeStr, loc)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
 		}
 		cellEndTimeStr := c.FormValue("cell-end-time-" + strconv.Itoa(i))
-		cellEndTime, err := time.ParseInLocation("2006-01-02T15:04", cellEndTimeStr, loc)
+		cellEndTime, err := time.ParseInLocation(util.HTMLInputTime, cellEndTimeStr, loc)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
 		}

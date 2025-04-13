@@ -1,8 +1,11 @@
 package views
 
-import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
-import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
-import "strconv"
+import (
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
+	"strconv"
+)
 
 templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models.Contract, isNew bool) {
 	<div id={ "schedule-form-" + strconv.Itoa(s.Schedule.ID) }>
@@ -26,8 +29,7 @@ templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *model
 			}
 			<input type="hidden" name="timezone" id="timezone"/>
 			<script type="text/javascript">
-                const tzid = Intl.DateTimeFormat().resolvedOptions().timeZone
-                document.getElementById("timezone").value = tzid
+                document.getElementById("timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone
             </script>
 			<fieldset>
 				<legend>Настройки расписания таблетницы</legend>
@@ -53,7 +55,7 @@ templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *model
 						type="datetime-local"
 						id={ "cell-start-time-" + strconv.Itoa(cell.Index) }
 						name={ "cell-start-time-" + strconv.Itoa(cell.Index) }
-						value={ cell.StartTime.Time.Format("2006-01-02T15:04") }
+						value={ cell.StartTime.Time.Format(util.HTMLInputTime) }
 					/>
 					<br/>
 					<label for={ "cell-end-time-" + strconv.Itoa(cell.Index) }>End Time</label>
@@ -61,7 +63,7 @@ templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *model
 						type="datetime-local"
 						id={ "cell-end-time-" + strconv.Itoa(cell.Index) }
 						name={ "cell-end-time-" + strconv.Itoa(cell.Index) }
-						value={ cell.EndTime.Time.Format("2006-01-02T15:04") }
+						value={ cell.EndTime.Time.Format(util.HTMLInputTime) }
 					/>
 					<br/>
 					<label for={ "cell-contents-description-" + strconv.Itoa(cell.Index) }>Contents Description</label>
