@@ -3,43 +3,86 @@ package views
 import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
 import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 import "strconv"
-import "time"
 
-templ Schedule(s models.ScheduleData, pd *models.PillDispenser, contract *models.Contract, isNew bool) {
-	if isNew {
-		<h3>Новое расписание</h3>
-	} else {
-		<h3>Расписание { s.Schedule.CreatedAt.GoString() }</h3>
-	}
-	<form hx-post={ string(templ.URL(bviews.Host + "/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) } hx-target="#schedules-list" hx-swap="afterbegin">
-		<fieldset>
-			<legend>Настройки расписания таблетницы</legend>
-			<input
-				type="checkbox"
-				id="offline-notify"
-				name="offline-notify"
-				if s.Schedule.IsOfflineNotificationsAllowed {
-					checked
-				}
-			/>
-			<label for="offline-notify">Уведомлять пользователя без подключения к интернету</label>
-		</fieldset>
-		<label for="refresh-rate">Частота обновления (в секундах)</label>
-		<input type="number" id="refresh-rate" name="refresh-rate" value={ strconv.Itoa(int(s.Schedule.RefreshRateInterval.Int64)) }/>
-		for _, cell := range s.Cells {
-			<p>
-				<label for={ "cell-time-" + strconv.Itoa(cell.Index) }>Ячейка намер { strconv.Itoa(cell.Index) }</label>
-				<input
-					type="datetime-local"
-					id={ "cell-time-" + strconv.Itoa(cell.Index) }
-					name={ "cell-time-" + strconv.Itoa(cell.Index) }
-					value={ cell.Time.Time.Format("2006-01-02T15:04") }
-					min={ time.Now().Format("2006-01-02T15:04") }
-				/>
-			</p>
+templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models.Contract, isNew bool) {
+	<div id={ "schedule-form-" + strconv.Itoa(s.Schedule.ID) }>
+		if isNew {
+			<h3>Новое расписание</h3>
+		} else {
+			<h3>Расписание { s.Schedule.CreatedAt.GoString() }</h3>
 		}
-		<button type="submit">Сохранить</button>
-	</form>
+		<form
+			if isNew {
+				hx-post={ string(templ.URL(bviews.Host + "/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
+				hx-target="#schedules-list"
+				hx-swap="afterbegin"
+			} else {
+				hx-post={ string(templ.URL(bviews.Host + "/settings/edit-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
+				hx-target={ "#schedule-form-" + strconv.Itoa(s.Schedule.ID) }
+			}
+		>
+			if !isNew {
+				<input type="hidden" name="schedule-id" value={ strconv.Itoa(s.Schedule.ID) }/>
+			}
+			<input type="hidden" name="timezone" id="timezone"/>
+			<script type="text/javascript">
+                const tzid = Intl.DateTimeFormat().resolvedOptions().timeZone
+                document.getElementById("timezone").value = tzid
+            </script>
+			<fieldset>
+				<legend>Настройки расписания таблетницы</legend>
+				<label for="offline-notify">Уведомлять пользователя без подключения к интернету</label>
+				<input
+					type="checkbox"
+					id="offline-notify"
+					name="offline-notify"
+					if s.Schedule.IsOfflineNotificationsAllowed {
+						checked
+					}
+				/>
+				<br/>
+				<label for="refresh-rate">Частота обновления (в секундах)</label>
+				<input type="number" id="refresh-rate" name="refresh-rate" value={ strconv.Itoa(int(s.Schedule.RefreshRateInterval.Int64)) }/>
+			</fieldset>
+			for _, cell := range s.Cells {
+				<br/>
+				<fieldset>
+					<legend>Ячейка номер { strconv.Itoa(cell.Index) }</legend>
+					<label for={ "cell-start-time-" + strconv.Itoa(cell.Index) }>Start time</label>
+					<input
+						type="datetime-local"
+						id={ "cell-start-time-" + strconv.Itoa(cell.Index) }
+						name={ "cell-start-time-" + strconv.Itoa(cell.Index) }
+						value={ cell.StartTime.Time.Format("2006-01-02T15:04") }
+					/>
+					<br/>
+					<label for={ "cell-end-time-" + strconv.Itoa(cell.Index) }>End Time</label>
+					<input
+						type="datetime-local"
+						id={ "cell-end-time-" + strconv.Itoa(cell.Index) }
+						name={ "cell-end-time-" + strconv.Itoa(cell.Index) }
+						value={ cell.EndTime.Time.Format("2006-01-02T15:04") }
+					/>
+					<br/>
+					<label for={ "cell-contents-description-" + strconv.Itoa(cell.Index) }>Contents Description</label>
+					<input
+						type="text"
+						id={ "cell-contents-description-" + strconv.Itoa(cell.Index) }
+						name={ "cell-contents-description-" + strconv.Itoa(cell.Index) }
+						value={ cell.ContentsDescription.String }
+					/>
+				</fieldset>
+			}
+			<br/>
+			<button type="submit">
+				if isNew {
+					Сохранить
+				} else {
+					Редактировать
+				}
+			</button>
+		</form>
+	</div>
 }
 
 templ ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData, contract *models.Contract) {
@@ -49,7 +92,7 @@ templ ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData
 		<br/>
 		<div id="schedules-list">
 			for _, schdl := range schedules {
-				@Schedule(schdl, pd, contract, false)
+				@Schedule(&schdl, pd, contract, false)
 			}
 		</div>
 	}

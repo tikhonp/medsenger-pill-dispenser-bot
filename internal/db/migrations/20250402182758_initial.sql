@@ -26,21 +26,22 @@ create table pill_dispenser
 create table schedule
 (
     id                               integer primary key autoincrement,
-    is_offline_notifications_allowed bool                               not null,
+    is_offline_notifications_allowed boolean                              not null,
     refresh_rate_interval            integer, -- durations in seconds
     contract_id                      integer                            not null,
     pill_dispenser_sn                varchar(255)                       not null,
     created_at                       datetime default current_timestamp not null,
     foreign key (contract_id) references contract (id),
-    foreign key (pill_dispenser_sn) references pill_dispenser (serial_number),
-    unique (contract_id, pill_dispenser_sn)
+    foreign key (pill_dispenser_sn) references pill_dispenser (serial_number)
 );
 
 create table schedule_cell
 (
-    idx  int not null,
-    schedule_id integer not null,
-    time datetime,
+    idx                  integer not null,
+    schedule_id          integer not null,
+    start_time           datetime,
+    end_time             datetime,
+    contents_description varchar(255),
     foreign key (schedule_id) references schedule (id),
     primary key (schedule_id, idx)
 );

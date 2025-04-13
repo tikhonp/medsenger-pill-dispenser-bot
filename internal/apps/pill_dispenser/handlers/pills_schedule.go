@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
@@ -28,8 +27,8 @@ func encodeSchedule(s *models.ScheduleData) []byte {
 	out := make([]byte, 0, cellsCount*(4+4+1)+4)
 	for _, cell := range s.Cells {
 		// make array of timestamps from now and every minute after
-		timestampStart := uint32(cell.Time.Time.Unix())
-		timestampEnd := uint32(cell.Time.Time.Add(time.Minute).Add(time.Second * 30).Unix())
+		timestampStart := uint32(cell.StartTime.Time.Unix())
+		timestampEnd := uint32(cell.EndTime.Time.Unix())
 		out = binary.LittleEndian.AppendUint32(out, timestampStart)
 		out = binary.LittleEndian.AppendUint32(out, timestampEnd)
 		if s.Schedule.IsOfflineNotificationsAllowed {

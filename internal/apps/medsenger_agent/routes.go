@@ -23,6 +23,8 @@ func ConfigureMedsengerAgentGroup(g *echo.Group, deps util.Dependencies) {
 	agentApiGetGroup.POST("/:serial-number", mah.SetSchedulePost)
 	agentApiGetGroup.GET("/:serial-number/new-schedule-form", mah.GetNewScheduleForm)
 
+	g.POST("/settings/edit-schedule/:serial-number", mah.EditSchedulePost, util.AgentTokenGetParam(mah.Db))
+
 	agentApiFormGroup := g.Group("/agent", util.AgentTokenForm(mah.Db))
 	agentApiFormGroup.POST("/contract-pill-dispenser", mah.AddContractPillDispenser)
 	agentApiFormGroup.DELETE("/contract-pill-dispenser", mah.RemoveContractPillDispenser)
