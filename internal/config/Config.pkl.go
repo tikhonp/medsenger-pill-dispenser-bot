@@ -14,6 +14,8 @@ type Config struct {
 	Db *Database `pkl:"db"`
 
 	Server *Server `pkl:"server"`
+
+	Host string `pkl:"host"`
 }
 
 // LoadFromPath loads the pkl module at the given path and evaluates it into a Config

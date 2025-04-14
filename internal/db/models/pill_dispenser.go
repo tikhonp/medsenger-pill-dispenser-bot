@@ -16,13 +16,13 @@ type PillDispenser struct {
 
 var (
 	ErrContractIdAlreadySet   = errors.New("contract id already set for this pill dispenser")
-	ErrPillDispenserNotExists = errors.New("pill dispenser not exsists for specified serial number")
+	ErrPillDispenserNotExists = errors.New("pill dispenser not exists for specified serial number")
 )
 
 type PillDispensers interface {
 	Get(serialNumber string) (*PillDispenser, error)
 
-	// New creates new pill dispenser with specifi serial number and hardware type.
+	// New creates new pill dispenser with specific serial number and hardware type.
 	New(serialNumber string, hwType HardwareType) error
 
 	// GetContractID fetches contract id for pill dispenser with specific serial number
@@ -60,7 +60,7 @@ func (pd *pillDispensers) New(serialNumber string, hwType HardwareType) error {
 
 func (pd *pillDispensers) GetContractID(serialNumber string) (int, error) {
 	var contractID int
-	err := pd.db.QueryRow("SELECT contract_id FROM pill_dispenser WHERE serial_numner = $1", serialNumber).Scan(&contractID)
+	err := pd.db.QueryRow("SELECT contract_id FROM pill_dispenser WHERE serial_number = $1", serialNumber).Scan(&contractID)
 	return contractID, err
 }
 
@@ -72,7 +72,7 @@ func (pd *pillDispensers) GetAllByContractID(contractID int) ([]PillDispenser, e
 
 func (pd *pillDispensers) RegisterContractID(serialNumber string, contractID int) error {
 	pillDispenser, err := pd.Get(serialNumber)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ErrPillDispenserNotExists
 	}
 	if err != nil {

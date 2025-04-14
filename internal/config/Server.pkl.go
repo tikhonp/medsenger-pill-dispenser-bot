@@ -2,9 +2,6 @@
 package config
 
 type Server struct {
-	// The hostname of this application.
-	Host string `pkl:"host"`
-
 	// The port to listen on.
 	Port uint16 `pkl:"port"`
 

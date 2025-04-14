@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,7 +23,7 @@ func (mah *MedsengerAgentHandler) SettingsGet(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid contract id")
 	}
 	contract, err := mah.Db.Contracts().Get(contractID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return echo.NewHTTPError(http.StatusNotFound, "contract not found")
 	} else if err != nil {
 		return err
@@ -48,18 +49,18 @@ func (mah *MedsengerAgentHandler) AddContractPillDispenser(c echo.Context) error
 		}
 		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Введите серийный номер"))
 	}
-	regContrIDerr := mah.Db.PillDispensers().RegisterContractID(serialNumber, contract.ID)
+	regContractIdErr := mah.Db.PillDispensers().RegisterContractID(serialNumber, contract.ID)
 	pillDispensers, err := mah.Db.PillDispensers().GetAllByContractID(contract.ID)
 	if err != nil {
 		return err
 	}
-	if regContrIDerr == models.ErrPillDispenserNotExists {
+	if errors.Is(regContractIdErr, models.ErrPillDispenserNotExists) {
 		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Устройство с таким серийным номером не найдено."))
 	}
-	if regContrIDerr == models.ErrContractIdAlreadySet {
+	if errors.Is(regContractIdErr, models.ErrContractIdAlreadySet) {
 		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Это устройство уже привязано к другому контракту, сначала отвяжите."))
 	}
-	if regContrIDerr != nil {
+	if regContractIdErr != nil {
 		return err
 	}
 	return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, ""))
@@ -111,37 +112,112 @@ func (mah *MedsengerAgentHandler) SetSchedulePost(c echo.Context) error {
 		return err
 	}
 
-	schdl := models.NewSchedule(pillDispenser)
+    locationStr := c.FormValue("timezone")
+    loc, err := time.LoadLocation(locationStr)
+    if err != nil {
+        return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone")
+    }
+
+	schedule := models.NewSchedule(pillDispenser)
 
 	offlineNotify := c.FormValue("offline-notify") == "on"
-	schdl.Schedule.IsOfflineNotificationsAllowed = offlineNotify
+	schedule.Schedule.IsOfflineNotificationsAllowed = offlineNotify
 
 	refreshRateIntervalStr := c.FormValue("refresh-rate")
 	refreshRateInterval, err := strconv.Atoi(refreshRateIntervalStr)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid refresh-rate")
 	}
-	schdl.Schedule.RefreshRateInterval = sql.NullInt64{Valid: true, Int64: int64(refreshRateInterval)}
+	schedule.Schedule.RefreshRateInterval = sql.NullInt64{Valid: true, Int64: int64(refreshRateInterval)}
 
-	schdl.Cells = make([]models.ScheduleCell, pillDispenser.HWType.GetCellsCount())
+	schedule.Cells = make([]models.ScheduleCell, pillDispenser.HWType.GetCellsCount())
 	for i := range pillDispenser.HWType.GetCellsCount() {
-		cellTimeStr := c.FormValue("cell-time-" + strconv.Itoa(i))
-		cellTime, err := time.Parse("2006-01-02T15:04", cellTimeStr)
+		cellStartTimeStr := c.FormValue("cell-start-time-" + strconv.Itoa(i))
+		cellStartTime, err := time.ParseInLocation(util.HTMLInputTime, cellStartTimeStr, loc)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
 		}
-		schdl.Cells[i] = models.ScheduleCell{
-			Index: i,
-			Time:  sql.NullTime{Valid: true, Time: cellTime},
+		cellEndTimeStr := c.FormValue("cell-end-time-" + strconv.Itoa(i))
+		cellEndTime, err := time.ParseInLocation(util.HTMLInputTime, cellEndTimeStr, loc)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
+		}
+		contentsDescription := c.FormValue("cell-contents-description-" + strconv.Itoa(i))
+		schedule.Cells[i] = models.ScheduleCell{
+			Index:               i,
+			StartTime:           sql.NullTime{Valid: true, Time: cellStartTime},
+			EndTime:             sql.NullTime{Valid: true, Time: cellEndTime},
+			ContentsDescription: sql.NullString{Valid: true, String: contentsDescription},
 		}
 	}
 
-	newSchedule, err := mah.Db.Schedules().NewSchedule(schdl)
+	newSchedule, err := mah.Db.Schedules().NewSchedule(*schedule)
+	if err != nil {
+		return err
+	}
+
+	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false))
+}
+
+func (mah *MedsengerAgentHandler) EditSchedulePost(c echo.Context) error {
+	contract, pillDispenser, err := mah.pillDispenserPagesCommon(c)
+	if err != nil {
+		return err
+	}
+
+    locationStr := c.FormValue("timezone")
+    loc, err := time.LoadLocation(locationStr)
     if err != nil {
-        return err
+        return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone")
     }
 
-	return util.TemplRender(c, views.Schedule(*newSchedule, pillDispenser, contract, false))
+	schedule := models.NewSchedule(pillDispenser)
+
+	scheduleIdStr := c.FormValue("schedule-id")
+	scheduleId, err := strconv.Atoi(scheduleIdStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid schedule id")
+	}
+	schedule.Schedule.ID = scheduleId
+
+	offlineNotify := c.FormValue("offline-notify") == "on"
+	schedule.Schedule.IsOfflineNotificationsAllowed = offlineNotify
+
+	refreshRateIntervalStr := c.FormValue("refresh-rate")
+	refreshRateInterval, err := strconv.Atoi(refreshRateIntervalStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid refresh-rate")
+	}
+	schedule.Schedule.RefreshRateInterval = sql.NullInt64{Valid: true, Int64: int64(refreshRateInterval)}
+
+	schedule.Cells = make([]models.ScheduleCell, pillDispenser.HWType.GetCellsCount())
+	for i := range pillDispenser.HWType.GetCellsCount() {
+		cellStartTimeStr := c.FormValue("cell-start-time-" + strconv.Itoa(i))
+		cellStartTime, err := time.ParseInLocation(util.HTMLInputTime, cellStartTimeStr, loc)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
+		}
+		cellEndTimeStr := c.FormValue("cell-end-time-" + strconv.Itoa(i))
+		cellEndTime, err := time.ParseInLocation(util.HTMLInputTime, cellEndTimeStr, loc)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
+		}
+		contentsDescription := c.FormValue("cell-contents-description-" + strconv.Itoa(i))
+		schedule.Cells[i] = models.ScheduleCell{
+			Index:               i,
+			ScheduleID:          scheduleId,
+			StartTime:           sql.NullTime{Valid: true, Time: cellStartTime},
+			EndTime:             sql.NullTime{Valid: true, Time: cellEndTime},
+			ContentsDescription: sql.NullString{Valid: true, String: contentsDescription},
+		}
+	}
+
+	newSchedule, err := mah.Db.Schedules().EditSchedule(*schedule)
+	if err != nil {
+		return err
+	}
+
+	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false))
 }
 
 func (mah *MedsengerAgentHandler) GetNewScheduleForm(c echo.Context) error {
@@ -149,6 +225,6 @@ func (mah *MedsengerAgentHandler) GetNewScheduleForm(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	schdl := models.NewSchedule(pillDispenser)
-	return util.TemplRender(c, views.Schedule(schdl, pillDispenser, contract, true))
+	schedule := models.NewSchedule(pillDispenser)
+	return util.TemplRender(c, views.Schedule(schedule, pillDispenser, contract, true))
 }

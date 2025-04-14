@@ -30,16 +30,8 @@ func New(cfg *config.Config) *echo.Echo {
 	} else {
 		e.Use(middleware.Logger())
 	}
-	// e.Use(middleware.Recover())
 
-	e.Use(middleware.CORSWithConfig(
-		middleware.CORSConfig{
-			// TODO: Set proper CORS configuration
-			AllowOrigins: []string{"*"},
-			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-			AllowMethods: []string{echo.GET},
-		},
-	))
+	e.Use(middleware.CORS())
 
 	e.Validator = util.NewDefaultValidator()
 
@@ -52,6 +44,6 @@ func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
 }
 
 func Start(e *echo.Echo, cfg *config.Config) error {
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 	return e.Start(addr)
 }

@@ -29,6 +29,8 @@ type Schedules interface {
 	//  returns ErrNoSchedule
 	GetScheduleForSN(serialNumber string) (*ScheduleData, error)
 	NewSchedule(schedule ScheduleData) (*ScheduleData, error)
+	EditSchedule(schedule ScheduleData) (*ScheduleData, error)
+	GetPillNameAndContractID(serialNumber string, cellIndex int) (string, int, error)
 }
 
 type schedule struct {
@@ -48,14 +50,14 @@ func (s *schedule) GetSchedules(pillDispenserSN string, contractID int) ([]Sched
 		return nil, err
 	}
 	var schedulesData []ScheduleData
-	for _, schd := range schedules {
+	for _, schedule := range schedules {
 		var cells []ScheduleCell
-		err := s.db.Select(&cells, "SELECT * FROM schedule_cell WHERE schedule_id = $1 ORDER BY idx", schd.ID)
+		err := s.db.Select(&cells, "SELECT * FROM schedule_cell WHERE schedule_id = $1 ORDER BY idx", schedule.ID)
 		if err != nil {
 			return nil, err
 		}
 		schedulesData = append(schedulesData, ScheduleData{
-			Schedule: schd,
+			Schedule: schedule,
 			Cells:    cells,
 		})
 	}
@@ -72,9 +74,9 @@ func (s *schedule) GetScheduleForSN(serialNumber string) (*ScheduleData, error) 
     LIMIT 1
     `
 	err := s.db.Get(&schedule, query, serialNumber)
-    if err == sql.ErrNoRows {
-        return nil, ErrNoSchedule
-    }
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNoSchedule
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -93,32 +95,93 @@ func (s *schedule) GetScheduleForSN(serialNumber string) (*ScheduleData, error) 
 }
 
 func (s *schedule) NewSchedule(schedule ScheduleData) (*ScheduleData, error) {
+	tx, err := s.db.Beginx()
+	if err != nil {
+		return &schedule, err
+	}
+
 	query := `
     INSERT INTO schedule (is_offline_notifications_allowed, refresh_rate_interval, contract_id, pill_dispenser_sn) 
-    VALUES (:is_offline_notifications_allowed, :refresh_rate_interval, :contract_id, :pill_dispenser_sn) RETURNING id, created_at
+    VALUES (:is_offline_notifications_allowed, :refresh_rate_interval, :contract_id, :pill_dispenser_sn) RETURNING *
     `
-	rows, err := s.db.NamedQuery(query, schedule.Schedule)
+	q, args, err := sqlx.Named(query, schedule.Schedule)
 	if err != nil {
 		return &schedule, err
 	}
-	if rows.Next() {
-		err = rows.Scan(&schedule.Schedule.ID, &schedule.Schedule.CreatedAt)
-		if err != nil {
-			return &schedule, err
-		}
-	}
-	err = rows.Close()
+	err = tx.QueryRowx(q, args...).StructScan(&schedule.Schedule)
 	if err != nil {
+		_ = tx.Rollback()
 		return &schedule, err
 	}
+
 	for i := range schedule.Cells {
 		schedule.Cells[i].ScheduleID = schedule.Schedule.ID
 	}
 	query = `
-    INSERT INTO schedule_cell (idx, schedule_id, time) VALUES (:idx, :schedule_id, :time)
+    INSERT INTO schedule_cell (idx, schedule_id, start_time, end_time, contents_description) 
+    VALUES (:idx, :schedule_id, :start_time, :end_time, :contents_description)
     `
-	_, err = s.db.NamedExec(query, schedule.Cells)
-	return &schedule, err
+	_, err = tx.NamedExec(query, schedule.Cells)
+	if err != nil {
+		_ = tx.Rollback()
+		return &schedule, err
+	}
+
+	return &schedule, tx.Commit()
+}
+
+func (s *schedule) EditSchedule(schedule ScheduleData) (*ScheduleData, error) {
+	tx, err := s.db.Beginx()
+	if err != nil {
+		return &schedule, err
+	}
+
+	query := `
+    UPDATE schedule SET is_offline_notifications_allowed = :is_offline_notifications_allowed, 
+                        refresh_rate_interval = :refresh_rate_interval, 
+                        contract_id = :contract_id, 
+                        pill_dispenser_sn = :pill_dispenser_sn
+    WHERE id = :id
+    RETURNING *
+    `
+	q, args, err := sqlx.Named(query, schedule.Schedule)
+	if err != nil {
+		return &schedule, err
+	}
+	err = tx.QueryRowx(q, args...).StructScan(&schedule.Schedule)
+	if err != nil {
+		_ = tx.Rollback()
+		return &schedule, err
+	}
+
+	query = `
+    UPDATE schedule_cell SET start_time = :start_time, end_time = :end_time, contents_description = :contents_description
+    WHERE idx = :idx AND schedule_id = :schedule_id
+    `
+	for _, cell := range schedule.Cells {
+		_, err := tx.NamedExec(query, cell)
+		if err != nil {
+			_ = tx.Rollback()
+			return &schedule, err
+		}
+	}
+
+	return &schedule, tx.Commit()
+}
+
+func (s *schedule) GetPillNameAndContractID(serialNumber string, cellIndex int) (string, int, error) {
+	query := `
+    SELECT sc.contents_description, pd.contract_id FROM schedule_cell sc
+    JOIN schedule s ON s.id = sc.schedule_id
+    JOIN pill_dispenser pd ON s.pill_dispenser_sn = pd.serial_number AND s.contract_id = pd.contract_id
+    WHERE pd.serial_number = $1 AND sc.idx = $2
+    ORDER BY s.created_at DESC
+    LIMIT 1
+    `
+	var pillName string
+	var contractId int
+	err := s.db.QueryRow(query, serialNumber, cellIndex).Scan(&pillName, &contractId)
+	return pillName, contractId, err
 }
 
 type ScheduleData struct {
@@ -126,8 +189,8 @@ type ScheduleData struct {
 	Cells    []ScheduleCell
 }
 
-func NewSchedule(pillDispenser *PillDispenser) ScheduleData {
-	return ScheduleData{
+func NewSchedule(pillDispenser *PillDispenser) *ScheduleData {
+	return &ScheduleData{
 		Schedule: Schedule{
 			IsOfflineNotificationsAllowed: true,
 			RefreshRateInterval:           sql.NullInt64{Valid: true, Int64: DefaultRefreshRateInterval},

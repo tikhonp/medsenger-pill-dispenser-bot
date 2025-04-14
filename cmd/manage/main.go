@@ -14,7 +14,7 @@ import (
 type command string
 
 const (
-	// PrintDbString prints the database configurtion string
+	// PrintDbString prints the database configuration string
 	// for sql connection
 	PrintDbString command = "print-db-string"
 
@@ -40,8 +40,9 @@ type manageConfig struct {
 	command    command
 	configPath string
 
-	serialNumber string
-	hwType       models.HardwareType
+	serialNumber                string
+	hwType                      models.HardwareType
+	addPillDispenserInteractive bool
 }
 
 func parseFlags() *manageConfig {
@@ -54,6 +55,7 @@ func parseFlags() *manageConfig {
 	flag.StringVar(&cfg.configPath, "config", "config.pkl", "path to config file")
 
 	flag.StringVar(&cfg.serialNumber, "serial-number", "", "serial number of pill dispenser")
+	flag.BoolVar(&cfg.addPillDispenserInteractive, "i", false, "prompt for data")
 	flag.Var(&cfg.hwType, "hardware-type", "pill dispenser hardware type")
 
 	flag.Parse()
@@ -67,9 +69,24 @@ func printDbString(cfg *config.Config) {
 	)
 }
 
+func addPillDispenserInteractive(cfg *config.Config) {
+	var serialNumber string
+	var hwType models.HardwareType
+
+	fmt.Print("Serial Number: ")
+	_, err := fmt.Scanln(&serialNumber)
+	util.AssertNoErr(err)
+
+	fmt.Print("Hardware Type: ")
+	_, err = fmt.Scanln(&hwType)
+	util.AssertNoErr(err)
+
+	addPillDispenser(cfg, serialNumber, hwType)
+}
+
 func addPillDispenser(cfg *config.Config, serialNumber string, hwType models.HardwareType) {
 	util.Assert(serialNumber != "", "provide serial number")
-	util.Assert(hwType != "", "provide hardware type")
+	util.Assert(hwType == models.HardwareType2x2 || hwType == models.HardwareType4x7, "provide hardware type")
 
 	modelsFactory, err := db.Connect(cfg.Db)
 	util.AssertNoErr(err)
@@ -89,8 +106,12 @@ func main() {
 	case PrintDbString:
 		printDbString(cfg)
 	case AddPillDispenser:
-		addPillDispenser(cfg, manageConfig.serialNumber, manageConfig.hwType)
+		if manageConfig.addPillDispenserInteractive {
+			addPillDispenserInteractive(cfg)
+		} else {
+			addPillDispenser(cfg, manageConfig.serialNumber, manageConfig.hwType)
+		}
 	default:
-		fmt.Println("Incvalid arguments")
+		fmt.Println("Invalid arguments")
 	}
 }

@@ -7,21 +7,23 @@ import (
 )
 
 func ConfigureMedsengerAgentGroup(g *echo.Group, deps util.Dependencies) {
-    mah := handlers.MedsengerAgentHandler(deps)
+	mah := handlers.MedsengerAgentHandler(deps)
 
 	g.GET("/", mah.MainPage)
 
-    medsengerAgentGroup := g.Group("", util.ApiKeyJSON(deps.Cfg.Server))
+	medsengerAgentGroup := g.Group("", util.ApiKeyJSON(deps.Cfg.Server))
 	medsengerAgentGroup.POST("/init", mah.Init)
 	medsengerAgentGroup.POST("/status", mah.Status)
 	medsengerAgentGroup.POST("/remove", mah.Remove)
 
-    g.GET("/settings", mah.SettingsGet, util.ApiKeyGetParam(deps.Cfg.Server))
+	g.GET("/settings", mah.SettingsGet, util.ApiKeyGetParam(deps.Cfg.Server))
 
-    agentApiGetGroup := g.Group("/settings/set-schedule", util.AgentTokenGetParam(mah.Db))
-    agentApiGetGroup.GET("/:serial-number", mah.SetScheduleGet)
-    agentApiGetGroup.POST("/:serial-number", mah.SetSchedulePost)
-    agentApiGetGroup.GET("/:serial-number/new-schedule-form", mah.GetNewScheduleForm)
+	agentApiGetGroup := g.Group("/settings/set-schedule", util.AgentTokenGetParam(mah.Db))
+	agentApiGetGroup.GET("/:serial-number", mah.SetScheduleGet)
+	agentApiGetGroup.POST("/:serial-number", mah.SetSchedulePost)
+	agentApiGetGroup.GET("/:serial-number/new-schedule-form", mah.GetNewScheduleForm)
+
+	g.POST("/settings/edit-schedule/:serial-number", mah.EditSchedulePost, util.AgentTokenGetParam(mah.Db))
 
 	agentApiFormGroup := g.Group("/agent", util.AgentTokenForm(mah.Db))
 	agentApiFormGroup.POST("/contract-pill-dispenser", mah.AddContractPillDispenser)

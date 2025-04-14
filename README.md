@@ -6,7 +6,7 @@ Agent for managing telepat smart pill dispenser scheduling.
 
 1. Install __docker__ and __make__
 
-2. Create `config.pkl` file in project root folder amendig `pkl/congig.pkl` scheme
+2. Create `config.pkl` file in project root folder amending `pkl/congig.pkl` scheme
 
 ### Run Development
 
@@ -20,7 +20,7 @@ or
 make dev
 ```
 
-or 
+or
 
 ```sh
 make build-dev # preferred if config files were changed, so it rebuilds image
@@ -42,7 +42,7 @@ goose -dir=internal/db/migrations create <migration-name> sql
 Other db shortcuts:
 
 ```sh
-make db-reset # reset all migrations (gooose reset)
+make db-reset # reset all migrations (goose reset)
 make db-down  # goose down
 ```
 
