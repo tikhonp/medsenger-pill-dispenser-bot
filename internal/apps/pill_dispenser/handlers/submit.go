@@ -28,10 +28,18 @@ func (pdh *PillDispenserHandler) SubmitPills(c echo.Context) error {
 		return err
 	}
 	submitTime := time.Unix(int64(timestamp), 0)
-	cellIndex := body[4]
+	cellIndex := int(body[4])
 	serialNumber := string(body[5:])
 
-	fmt.Printf("Submit pill request: [time > %v cell > %d serialn > %s]\n", submitTime, cellIndex, serialNumber)
+	pillName, conractId, err := pdh.Db.Schedules().GetPillNameAndContractID(serialNumber, cellIndex)
+	if err != nil {
+		return err
+	}
+
+	_, err = pdh.Maigo.AddRecord(conractId, "medicines", pillName, submitTime, nil)
+	if err != nil {
+		return err
+	}
 
 	return c.NoContent(http.StatusOK)
 }

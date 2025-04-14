@@ -30,6 +30,7 @@ type Schedules interface {
 	GetScheduleForSN(serialNumber string) (*ScheduleData, error)
 	NewSchedule(schedule ScheduleData) (*ScheduleData, error)
 	EditSchedule(schedule ScheduleData) (*ScheduleData, error)
+	GetPillNameAndContractID(serialNumber string, cellIndex int) (string, int, error)
 }
 
 type schedule struct {
@@ -166,6 +167,21 @@ func (s *schedule) EditSchedule(schedule ScheduleData) (*ScheduleData, error) {
 	}
 
 	return &schedule, tx.Commit()
+}
+
+func (s *schedule) GetPillNameAndContractID(serialNumber string, cellIndex int) (string, int, error) {
+	query := `
+    SELECT sc.contents_description, pd.contract_id FROM schedule_cell sc
+    JOIN schedule s ON s.id = sc.schedule_id
+    JOIN pill_dispenser pd ON s.pill_dispenser_sn = pd.serial_number AND s.contract_id = pd.contract_id
+    WHERE pd.serial_number = $1 AND sc.idx = $2
+    ORDER BY s.created_at DESC
+    LIMIT 1
+    `
+	var pillName string
+	var contractId int
+	err := s.db.QueryRow(query, serialNumber, cellIndex).Scan(&pillName, &contractId)
+	return pillName, contractId, err
 }
 
 type ScheduleData struct {
