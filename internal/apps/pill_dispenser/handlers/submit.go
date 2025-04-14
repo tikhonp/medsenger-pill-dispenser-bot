@@ -36,7 +36,7 @@ func (pdh *PillDispenserHandler) SubmitPills(c echo.Context) error {
 		return err
 	}
 
-	_, err = pdh.Maigo.AddRecord(conractId, "medicines", pillName, submitTime, nil)
+	_, err = pdh.Maigo.AddRecord(conractId, "medicine", pillName, submitTime, nil)
 	if err != nil {
 		return err
 	}

@@ -5,85 +5,94 @@ import (
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 	"strconv"
+	"time"
 )
 
 templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models.Contract, isNew bool) {
 	<div id={ "schedule-form-" + strconv.Itoa(s.Schedule.ID) }>
-		if isNew {
-			<h3>Новое расписание</h3>
-		} else {
-			<h3>Расписание { s.Schedule.CreatedAt.GoString() }</h3>
-		}
-		<form
+		<details
 			if isNew {
-				hx-post={ string(templ.URL(bviews.Host + "/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
-				hx-target="#schedules-list"
-				hx-swap="afterbegin"
-			} else {
-				hx-post={ string(templ.URL(bviews.Host + "/settings/edit-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
-				hx-target={ "#schedule-form-" + strconv.Itoa(s.Schedule.ID) }
+				open
 			}
 		>
-			if !isNew {
-				<input type="hidden" name="schedule-id" value={ strconv.Itoa(s.Schedule.ID) }/>
-			}
-			<input type="hidden" name="timezone" id="timezone"/>
-			<script type="text/javascript">
+			<summary>
+				if isNew {
+					Новое расписание
+				} else {
+					Расписание { s.Schedule.CreatedAt.Format(time.DateTime) }
+				}
+			</summary>
+			<form
+				if isNew {
+					hx-post={ string(templ.URL(bviews.Host + "/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
+					hx-target="#schedules-list"
+					hx-swap="afterbegin"
+				} else {
+					hx-post={ string(templ.URL(bviews.Host + "/settings/edit-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
+					hx-target={ "#schedule-form-" + strconv.Itoa(s.Schedule.ID) }
+				}
+			>
+				if !isNew {
+					<input type="hidden" name="schedule-id" value={ strconv.Itoa(s.Schedule.ID) }/>
+				}
+				<input type="hidden" name="timezone" id="timezone"/>
+				<script type="text/javascript">
                 document.getElementById("timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone
             </script>
-			<fieldset>
-				<legend>Настройки расписания таблетницы</legend>
-				<label for="offline-notify">Уведомлять пользователя без подключения к интернету</label>
-				<input
-					type="checkbox"
-					id="offline-notify"
-					name="offline-notify"
-					if s.Schedule.IsOfflineNotificationsAllowed {
-						checked
-					}
-				/>
-				<br/>
-				<label for="refresh-rate">Частота обновления (в секундах)</label>
-				<input type="number" id="refresh-rate" name="refresh-rate" value={ strconv.Itoa(int(s.Schedule.RefreshRateInterval.Int64)) }/>
-			</fieldset>
-			for _, cell := range s.Cells {
-				<br/>
 				<fieldset>
-					<legend>Ячейка номер { strconv.Itoa(cell.Index) }</legend>
-					<label for={ "cell-start-time-" + strconv.Itoa(cell.Index) }>Start time</label>
+					<legend>Настройки расписания таблетницы</legend>
+					<label for="offline-notify">Уведомлять пользователя без подключения к интернету</label>
 					<input
-						type="datetime-local"
-						id={ "cell-start-time-" + strconv.Itoa(cell.Index) }
-						name={ "cell-start-time-" + strconv.Itoa(cell.Index) }
-						value={ cell.StartTime.Time.Format(util.HTMLInputTime) }
+						type="checkbox"
+						id="offline-notify"
+						name="offline-notify"
+						if s.Schedule.IsOfflineNotificationsAllowed {
+							checked
+						}
 					/>
 					<br/>
-					<label for={ "cell-end-time-" + strconv.Itoa(cell.Index) }>End Time</label>
-					<input
-						type="datetime-local"
-						id={ "cell-end-time-" + strconv.Itoa(cell.Index) }
-						name={ "cell-end-time-" + strconv.Itoa(cell.Index) }
-						value={ cell.EndTime.Time.Format(util.HTMLInputTime) }
-					/>
-					<br/>
-					<label for={ "cell-contents-description-" + strconv.Itoa(cell.Index) }>Contents Description</label>
-					<input
-						type="text"
-						id={ "cell-contents-description-" + strconv.Itoa(cell.Index) }
-						name={ "cell-contents-description-" + strconv.Itoa(cell.Index) }
-						value={ cell.ContentsDescription.String }
-					/>
+					<label for="refresh-rate">Частота обновления (в секундах)</label>
+					<input type="number" id="refresh-rate" name="refresh-rate" value={ strconv.Itoa(int(s.Schedule.RefreshRateInterval.Int64)) }/>
 				</fieldset>
-			}
-			<br/>
-			<button type="submit">
-				if isNew {
-					Сохранить
-				} else {
-					Редактировать
+				for _, cell := range s.Cells {
+					<br/>
+					<fieldset>
+						<legend>Ячейка номер { strconv.Itoa(cell.Index) }</legend>
+						<label for={ "cell-start-time-" + strconv.Itoa(cell.Index) }>Start time</label>
+						<input
+							type="datetime-local"
+							id={ "cell-start-time-" + strconv.Itoa(cell.Index) }
+							name={ "cell-start-time-" + strconv.Itoa(cell.Index) }
+							value={ cell.StartTime.Time.Format(util.HTMLInputTime) }
+						/>
+						<br/>
+						<label for={ "cell-end-time-" + strconv.Itoa(cell.Index) }>End Time</label>
+						<input
+							type="datetime-local"
+							id={ "cell-end-time-" + strconv.Itoa(cell.Index) }
+							name={ "cell-end-time-" + strconv.Itoa(cell.Index) }
+							value={ cell.EndTime.Time.Format(util.HTMLInputTime) }
+						/>
+						<br/>
+						<label for={ "cell-contents-description-" + strconv.Itoa(cell.Index) }>Contents Description</label>
+						<input
+							type="text"
+							id={ "cell-contents-description-" + strconv.Itoa(cell.Index) }
+							name={ "cell-contents-description-" + strconv.Itoa(cell.Index) }
+							value={ cell.ContentsDescription.String }
+						/>
+					</fieldset>
 				}
-			</button>
-		</form>
+				<br/>
+				<button type="submit">
+					if isNew {
+						Сохранить
+					} else {
+						Редактировать
+					}
+				</button>
+			</form>
+		</details>
 	</div>
 }
 
