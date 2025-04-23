@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ARG GOVERSION=1.24.2
-ARG PKL_VERSION=0.28.1
+ARG PKL_VERSION=0.28.2
 
 FROM golang:${GOVERSION} AS dev
 RUN go install "github.com/air-verse/air@latest"

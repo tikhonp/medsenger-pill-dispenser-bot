@@ -1,8 +1,6 @@
 services:
   server:
     container_name: pill-dispenser-agent
-    image: pill-dispenser-bot
-    restart: always
     build:
       context: .
       target: dev
@@ -10,3 +8,5 @@ services:
       - "3054:3054"
     volumes:
       - ./:/src
+    environment:
+      - SOURCE_COMMIT=${SOURCE_COMMIT}

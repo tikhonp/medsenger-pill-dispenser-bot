@@ -5,7 +5,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsenger_agent"
 	pilldispenser "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/pill_dispenser"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
@@ -17,8 +16,6 @@ func New(cfg *config.Config) *echo.Echo {
 
 	e.HideBanner = true
 	e.Debug = cfg.Server.Debug
-
-	e.Logger.SetLevel(log.DEBUG)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 

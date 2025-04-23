@@ -8,7 +8,7 @@ import (
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/assert"
 )
 
 type command string
@@ -75,23 +75,23 @@ func addPillDispenserInteractive(cfg *config.Config) {
 
 	fmt.Print("Serial Number: ")
 	_, err := fmt.Scanln(&serialNumber)
-	util.AssertNoErr(err)
+	assert.NoErr(err)
 
 	fmt.Print("Hardware Type: ")
 	_, err = fmt.Scanln(&hwType)
-	util.AssertNoErr(err)
+	assert.NoErr(err)
 
 	addPillDispenser(cfg, serialNumber, hwType)
 }
 
 func addPillDispenser(cfg *config.Config, serialNumber string, hwType models.HardwareType) {
-	util.Assert(serialNumber != "", "provide serial number")
-	util.Assert(hwType == models.HardwareType2x2 || hwType == models.HardwareType4x7, "provide hardware type")
+	assert.C(serialNumber != "", "provide serial number")
+	assert.C(hwType == models.HardwareType2x2 || hwType == models.HardwareType4x7, "provide hardware type")
 
 	modelsFactory, err := db.Connect(cfg.Db)
-	util.AssertNoErr(err)
+	assert.NoErr(err)
 
-	util.AssertNoErr(
+	assert.NoErr(
 		modelsFactory.PillDispensers().New(serialNumber, hwType),
 	)
 }
@@ -100,7 +100,7 @@ func main() {
 	manageConfig := parseFlags()
 
 	cfg, err := config.LoadFromPath(context.Background(), manageConfig.configPath)
-	util.AssertNoErr(err)
+	assert.NoErr(err)
 
 	switch manageConfig.command {
 	case PrintDbString:

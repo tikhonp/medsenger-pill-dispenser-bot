@@ -1,7 +1,6 @@
 services:
   server:
     container_name: pill-dispenser-agent
-    image: pill-dispenser-bot
     restart: always
     build:
       context: .
@@ -16,7 +15,8 @@ services:
         max-file: "3"
     volumes:
       - db-data:/tmp/sqlite-db
-
+    environment:
+      - SOURCE_COMMIT=${SOURCE_COMMIT}
 
 volumes:
   db-data:

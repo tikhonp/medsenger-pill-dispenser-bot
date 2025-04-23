@@ -9,16 +9,17 @@ import (
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/router"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/assert"
 )
 
 func initDependencies() util.Dependencies {
 	// Read the configuration from the pkl file
 	cfg, err := config.LoadFromPath(context.Background(), "config.pkl")
-	util.AssertNoErr(err)
+	assert.NoErr(err)
 
 	// Connect to the database
 	modelsFactory, err := db.Connect(cfg.Db)
-	util.AssertNoErr(err)
+	assert.NoErr(err)
 
 	maigoClient := maigo.Init(cfg.Server.MedsengerAgentKey)
 
@@ -30,7 +31,6 @@ func main() {
 
 	bviews.Host = deps.Cfg.Host
 
-	// Setup server
 	r := router.New(deps.Cfg)
 	router.RegisterRoutes(r, deps)
 	r.Logger.Fatal(router.Start(r, deps.Cfg))
