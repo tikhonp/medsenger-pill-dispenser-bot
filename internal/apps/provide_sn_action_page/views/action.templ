@@ -1,0 +1,87 @@
+package views
+
+import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
+
+templ ActionPage(errString string) {
+	@bviews.Base("Настройка Таблетницы") {
+		<h3>Настройка таблетницы</h3>
+		<p>Пожалуйста, заполните серийный номер вашей таблетницы.</p>
+		<form method="POST">
+			<div class="card" style="bg">
+				<div class="card-body">
+					<div class="form-group form-group-sm row required">
+						<div class="col-md-4" style="padding-top: 5px;">
+							<strong class="big" style="title_style">Серийный номер</strong>
+						</div>
+						<div class="col-md-8">
+							<input class="form-control form-control-sm" type="text" name="serial-number" required/>
+						</div>
+					</div>
+				</div>
+			</div>
+			if errString != "" {
+				<div class="card" style="bg">
+					<div class="card-body">
+						<span>ОШИБКА: { errString }</span>
+					</div>
+				</div>
+			}
+			<button class="btn btn-success" type="submit">Записать</button>
+		</form>
+		@styles()
+	}
+}
+
+templ ActionSuccess() {
+	@bviews.Base("Настройка Таблетницы") {
+        <h3>Спасибо</h3>
+		<div class="alert alert-success" role="alert">
+			Серийный номер успешно сохранен
+		</div>
+		<script>
+            setTimeout(() => {
+                window.parent.postMessage('close-modal-success', '*');
+            }, 1000);
+        </script>
+	}
+}
+
+templ styles() {
+	<style scoped>
+.card {
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: 55px;
+    height: 95%;
+}
+
+.card a {
+    font-size: 0.75rem;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+p {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+strong {
+    font-size: 0.9rem;
+}
+
+strong.big {
+    font-size: 1rem;
+}
+
+.form-group.required strong:after {
+    color: red;
+    content: ' *';
+    font-size: 18px;
+}
+</style>
+}

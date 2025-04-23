@@ -14,21 +14,11 @@ import (
 )
 
 func (mah *SettingsPageHandler) SettingsGet(c echo.Context) error {
-	contractIdStr := c.QueryParam("contract_id")
-	if contractIdStr == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "provide contract id")
-	}
-	contractID, err := strconv.Atoi(contractIdStr)
+	contract, err := util.GetContract(c)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid contract id")
-	}
-	contract, err := mah.Db.Contracts().Get(contractID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return echo.NewHTTPError(http.StatusNotFound, "contract not found")
-	} else if err != nil {
 		return err
 	}
-	pillDispensers, err := mah.Db.PillDispensers().GetAllByContractID(contractID)
+	pillDispensers, err := mah.Db.PillDispensers().GetAllByContractID(contract.ID)
 	if err != nil {
 		return err
 	}

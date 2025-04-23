@@ -34,9 +34,9 @@ func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractId int, ctx ec
 	}
 	_, err = mah.Maigo.SendMessage(
 		contractId,
-		"Подключен агент для таблетницы",
-		// maigo.WithAction("Настроить", "/setup", maigo.Action),
-		maigo.OnlyDoctor(),
+		"Пожалуйста, введите серийный номер номер, выданного Вам, устройства.",
+		maigo.WithAction("Ввести", "/provide-sn", maigo.Action),
+		maigo.OnlyPatient(),
 	)
 	if err != nil {
 		// sentry.CaptureException(err)

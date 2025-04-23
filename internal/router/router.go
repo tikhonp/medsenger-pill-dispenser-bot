@@ -8,6 +8,7 @@ import (
 	mainpage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/main_page"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsenger_agent"
 	pilldispenser "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/pill_dispenser"
+	providesnactionpage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/provide_sn_action_page"
 	settingspage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/settings_page"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
@@ -39,9 +40,10 @@ func New(cfg *config.Config) *echo.Echo {
 
 func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
 	mainpage.ConfigureMainPageGroup(e.Group(""), deps)
-	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group("/medsenger"), deps)
-	settingspage.ConfigureMedsengerAgentGroup(e.Group("/medsenger/settings"), deps)
 	pilldispenser.ConfigurePillDispenserGroup(e.Group("/pill-dispenser"), deps)
+	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group("/medsenger"), deps)
+	settingspage.ConfigureSettingsPageGroup(e.Group("/medsenger/settings"), deps)
+	providesnactionpage.ConfigureProvideSNActionGroup(e.Group("/medsenger/provide-sn"), deps)
 }
 
 func Start(e *echo.Echo, cfg *config.Config) error {

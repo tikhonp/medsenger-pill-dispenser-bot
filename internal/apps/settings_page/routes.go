@@ -6,10 +6,10 @@ import (
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 )
 
-func ConfigureMedsengerAgentGroup(g *echo.Group, deps util.Dependencies) {
+func ConfigureSettingsPageGroup(g *echo.Group, deps util.Dependencies) {
 	sph := handlers.SettingsPageHandler(deps)
 
-	g.GET("", sph.SettingsGet, util.ApiKeyGetParam(deps.Cfg.Server))
+	g.GET("", sph.SettingsGet, util.ApiKeyGetParam(deps.Cfg.Server), util.ContractIdQueryParam(deps.Db))
 
 	agentApiGetGroup := g.Group("/set-schedule", util.AgentTokenGetParam(deps.Db))
 	agentApiGetGroup.GET("/:serial-number", sph.SetScheduleGet)

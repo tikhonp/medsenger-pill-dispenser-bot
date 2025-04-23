@@ -79,7 +79,11 @@ func (pd *pillDispensers) RegisterContractID(serialNumber string, contractID int
 		return err
 	}
 	if pillDispenser.ContractID.Valid {
-		return ErrContractIdAlreadySet
+		if pillDispenser.ContractID.Int64 == int64(contractID) {
+			return nil
+		} else {
+			return ErrContractIdAlreadySet
+		}
 	}
 	_, err = pd.db.Exec("UPDATE pill_dispenser SET contract_id = $1 WHERE serial_number = $2", contractID, serialNumber)
 	return err
