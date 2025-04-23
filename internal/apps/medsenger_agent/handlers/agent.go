@@ -100,3 +100,19 @@ func (mah *MedsengerAgentHandler) Remove(c echo.Context) error {
 	return c.String(http.StatusCreated, "ok")
 
 }
+
+type orderModel struct {
+	contractIdModel
+}
+
+func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
+	m := new(orderModel)
+	if err := c.Bind(m); err != nil {
+		return err
+	}
+	if err := c.Validate(m); err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
+}

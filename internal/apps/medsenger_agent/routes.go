@@ -14,4 +14,5 @@ func ConfigureMedsengerAgentGroup(g *echo.Group, deps util.Dependencies) {
 	g.POST("/init", mah.Init)
 	g.POST("/status", mah.Status)
 	g.POST("/remove", mah.Remove)
+	g.POST("/order", mah.Order)
 }
