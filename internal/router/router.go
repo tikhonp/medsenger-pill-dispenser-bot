@@ -5,8 +5,10 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	mainpage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/main_page"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsenger_agent"
 	pilldispenser "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/pill_dispenser"
+	settingspage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/settings_page"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 )
@@ -36,7 +38,9 @@ func New(cfg *config.Config) *echo.Echo {
 }
 
 func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
-	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group(""), deps)
+	mainpage.ConfigureMainPageGroup(e.Group(""), deps)
+	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group("/medsenger"), deps)
+	settingspage.ConfigureMedsengerAgentGroup(e.Group("/medsenger/settings"), deps)
 	pilldispenser.ConfigurePillDispenserGroup(e.Group("/pill-dispenser"), deps)
 }
 

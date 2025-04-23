@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsenger_agent/views"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/settings_page/views"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 )
 
-func (mah *MedsengerAgentHandler) SettingsGet(c echo.Context) error {
+func (mah *SettingsPageHandler) SettingsGet(c echo.Context) error {
 	contractIdStr := c.QueryParam("contract_id")
 	if contractIdStr == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "provide contract id")
@@ -36,7 +36,7 @@ func (mah *MedsengerAgentHandler) SettingsGet(c echo.Context) error {
 	return util.TemplRender(c, views.Settings(contract, pillDispensers))
 }
 
-func (mah *MedsengerAgentHandler) AddContractPillDispenser(c echo.Context) error {
+func (mah *SettingsPageHandler) AddContractPillDispenser(c echo.Context) error {
 	contract, err := util.GetContract(c)
 	if err != nil {
 		return err
@@ -66,7 +66,7 @@ func (mah *MedsengerAgentHandler) AddContractPillDispenser(c echo.Context) error
 	return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, ""))
 }
 
-func (mah *MedsengerAgentHandler) RemoveContractPillDispenser(c echo.Context) error {
+func (mah *SettingsPageHandler) RemoveContractPillDispenser(c echo.Context) error {
 	serialNumber := c.FormValue("serial-number")
 	if serialNumber == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "provide serial number")
@@ -78,7 +78,7 @@ func (mah *MedsengerAgentHandler) RemoveContractPillDispenser(c echo.Context) er
 	return c.NoContent(http.StatusOK)
 }
 
-func (mah *MedsengerAgentHandler) pillDispenserPagesCommon(c echo.Context) (*models.Contract, *models.PillDispenser, error) {
+func (mah *SettingsPageHandler) pillDispenserPagesCommon(c echo.Context) (*models.Contract, *models.PillDispenser, error) {
 	contract, err := util.GetContract(c)
 	if err != nil {
 		return nil, nil, err
@@ -94,7 +94,7 @@ func (mah *MedsengerAgentHandler) pillDispenserPagesCommon(c echo.Context) (*mod
 	return contract, pillDispenser, nil
 }
 
-func (mah *MedsengerAgentHandler) SetScheduleGet(c echo.Context) error {
+func (mah *SettingsPageHandler) SetScheduleGet(c echo.Context) error {
 	contract, pillDispenser, err := mah.pillDispenserPagesCommon(c)
 	if err != nil {
 		return err
@@ -106,17 +106,17 @@ func (mah *MedsengerAgentHandler) SetScheduleGet(c echo.Context) error {
 	return util.TemplRender(c, views.ScheduleSettings(pillDispenser, schedules, contract))
 }
 
-func (mah *MedsengerAgentHandler) SetSchedulePost(c echo.Context) error {
+func (mah *SettingsPageHandler) SetSchedulePost(c echo.Context) error {
 	contract, pillDispenser, err := mah.pillDispenserPagesCommon(c)
 	if err != nil {
 		return err
 	}
 
-    locationStr := c.FormValue("timezone")
-    loc, err := time.LoadLocation(locationStr)
-    if err != nil {
-        return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone")
-    }
+	locationStr := c.FormValue("timezone")
+	loc, err := time.LoadLocation(locationStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone")
+	}
 
 	schedule := models.NewSchedule(pillDispenser)
 
@@ -159,17 +159,17 @@ func (mah *MedsengerAgentHandler) SetSchedulePost(c echo.Context) error {
 	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false))
 }
 
-func (mah *MedsengerAgentHandler) EditSchedulePost(c echo.Context) error {
+func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 	contract, pillDispenser, err := mah.pillDispenserPagesCommon(c)
 	if err != nil {
 		return err
 	}
 
-    locationStr := c.FormValue("timezone")
-    loc, err := time.LoadLocation(locationStr)
-    if err != nil {
-        return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone")
-    }
+	locationStr := c.FormValue("timezone")
+	loc, err := time.LoadLocation(locationStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone")
+	}
 
 	schedule := models.NewSchedule(pillDispenser)
 
@@ -220,7 +220,7 @@ func (mah *MedsengerAgentHandler) EditSchedulePost(c echo.Context) error {
 	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false))
 }
 
-func (mah *MedsengerAgentHandler) GetNewScheduleForm(c echo.Context) error {
+func (mah *SettingsPageHandler) GetNewScheduleForm(c echo.Context) error {
 	contract, pillDispenser, err := mah.pillDispenserPagesCommon(c)
 	if err != nil {
 		return err
