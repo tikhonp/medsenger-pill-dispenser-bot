@@ -33,6 +33,10 @@ func New(cfg *config.Config) *echo.Echo {
 
 	e.Use(middleware.CORS())
 
+	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+		fmt.Println("REQUEST", string(reqBody))
+	}))
+
 	e.Validator = util.NewDefaultValidator()
 
 	return e
