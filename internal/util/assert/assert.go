@@ -1,9 +1,9 @@
-// assert contains simple assertations functions
+// Package assert contains simple assertations functions
 package assert
 
 import "fmt"
 
-// C is asserct on Condition: panics if condition is true.
+// C is asserted on Condition: panics if condition is true.
 func C(condition bool, msg string) {
 	if !condition {
 		panic(msg)

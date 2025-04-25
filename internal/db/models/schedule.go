@@ -15,15 +15,16 @@ var (
 const DefaultRefreshRateInterval int64 = 60 * 60 // seconds
 
 type Schedule struct {
-	ID                            int           `db:"id"`
-	IsOfflineNotificationsAllowed bool          `db:"is_offline_notifications_allowed"`
-	RefreshRateInterval           sql.NullInt64 `db:"refresh_rate_interval"`
-	ContractID                    int           `db:"contract_id"`
-	PillDispenserSN               string        `db:"pill_dispenser_sn"`
-	CreatedAt                     time.Time     `db:"created_at"`
+	ID                            int            `db:"id"`
+	IsOfflineNotificationsAllowed bool           `db:"is_offline_notifications_allowed"`
+	RefreshRateInterval           sql.NullInt64  `db:"refresh_rate_interval"`
+	ContractID                    int            `db:"contract_id"`
+	PillDispenserSN               sql.NullString `db:"pill_dispenser_sn"`
+	CreatedAt                     time.Time      `db:"created_at"`
 }
 
 type Schedules interface {
+	GetLastScheduleForContractID(contractID int) (*ScheduleData, error)
 	GetSchedules(pillDispenserSN string, contractID int) ([]ScheduleData, error)
 	// GetScheduleForSN fetches schedule for pill dispenser with specified serial number
 	//  returns ErrNoSchedule
@@ -184,6 +185,36 @@ func (s *schedule) GetPillNameAndContractID(serialNumber string, cellIndex int) 
 	return pillName, contractId, err
 }
 
+func (s *schedule) GetLastScheduleForContractID(contractID int) (*ScheduleData, error) {
+	var schedule Schedule
+	query := `
+    SELECT s.* FROM schedule s
+    JOIN pill_dispenser pd ON s.pill_dispenser_sn = pd.serial_number AND s.contract_id = pd.contract_id
+    WHERE pd.contract_id = $1
+    ORDER BY created_at DESC
+    LIMIT 1
+    `
+	err := s.db.Get(&schedule, query, contractID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNoSchedule
+	}
+	if err != nil {
+		return nil, err
+	}
+	var cells []ScheduleCell
+	query = `
+    SELECT * FROM schedule_cell WHERE schedule_id = $1 ORDER BY idx
+    `
+	err = s.db.Select(&cells, query, schedule.ID)
+	if err != nil {
+		return nil, err
+	}
+	return &ScheduleData{
+		Schedule: schedule,
+		Cells:    cells,
+	}, nil
+}
+
 type ScheduleData struct {
 	Schedule Schedule
 	Cells    []ScheduleCell
@@ -195,8 +226,20 @@ func NewSchedule(pillDispenser *PillDispenser) *ScheduleData {
 			IsOfflineNotificationsAllowed: true,
 			RefreshRateInterval:           sql.NullInt64{Valid: true, Int64: DefaultRefreshRateInterval},
 			ContractID:                    int(pillDispenser.ContractID.Int64),
-			PillDispenserSN:               pillDispenser.SerialNumber,
+			PillDispenserSN:               sql.NullString{Valid: true, String: pillDispenser.SerialNumber},
 		},
 		Cells: NewCellsSet(pillDispenser.HWType.GetCellsCount(), 0),
+	}
+}
+
+func New4X4Schedule(contractID int) *ScheduleData {
+	return &ScheduleData{
+		Schedule: Schedule{
+			IsOfflineNotificationsAllowed: true,
+			RefreshRateInterval:           sql.NullInt64{Valid: true, Int64: DefaultRefreshRateInterval},
+			ContractID:                    contractID,
+			PillDispenserSN:               sql.NullString{Valid: false},
+		},
+		Cells: NewCellsSet(4, 0),
 	}
 }

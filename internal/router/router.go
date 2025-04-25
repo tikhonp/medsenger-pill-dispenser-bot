@@ -33,10 +33,6 @@ func New(cfg *config.Config) *echo.Echo {
 
 	e.Use(middleware.CORS())
 
-	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		fmt.Println("REQUEST", string(reqBody))
-	}))
-
 	e.Validator = util.NewDefaultValidator()
 
 	return e
@@ -47,7 +43,7 @@ func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
 	pilldispenser.ConfigurePillDispenserGroup(e.Group("/pill-dispenser"), deps)
 	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group("/medsenger"), deps)
 	settingspage.ConfigureSettingsPageGroup(e.Group("/medsenger/settings"), deps)
-	providesnactionpage.ConfigureProvideSNActionGroup(e.Group("/medsenger/provide-sn"), deps)
+	providesnactionpage.ConfigureProvideSNActionGroup(e.Group("/provide-sn"), deps)
 }
 
 func Start(e *echo.Echo, cfg *config.Config) error {
