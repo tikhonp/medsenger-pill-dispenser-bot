@@ -8,10 +8,10 @@ templ ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract)
 	<p>SN: { pd.SerialNumber }</p>
 	<p>
 		<a
-			href={ templ.URL(fmt.Sprintf("%s/settings/set-schedule/%s?agent_token=%s", bviews.Host, pd.SerialNumber, contract.AgentToken)) }
+			href={ templ.URL(fmt.Sprintf("%s/medsenger/settings/set-schedule/%s?agent_token=%s", bviews.Host, pd.SerialNumber, contract.AgentToken)) }
 		>Настроить расписание</a>
 	</p>
-	<form hx-delete={ string(templ.URL(bviews.Host + "/agent/contract-pill-dispenser")) } hx-target={ "#conneced-pill-dispenser-" + pd.SerialNumber } hx-swap="outerHTML">
+	<form hx-delete={ string(templ.URL(bviews.Host + "/medsenger/settings/pill-dispenser")) } hx-target={ "#conneced-pill-dispenser-" + pd.SerialNumber } hx-swap="outerHTML">
 		@bviews.AgentToken(contract)
 		<input type="hidden" name="serial-number" value={ pd.SerialNumber }/>
 		<button type="submit">Отвязать</button>
@@ -35,7 +35,7 @@ templ PillDispensersList(pillDispensers []models.PillDispenser, contract *models
 	if errors != "" {
 		<p><b>ОШИБКА: { errors }</b></p>
 	}
-	<form hx-post={ string(templ.URL(bviews.Host + "/agent/contract-pill-dispenser")) } hx-target="#pill-dispensers-list">
+	<form hx-post={ string(templ.URL(bviews.Host + "/medsenger/settings/pill-dispenser")) } hx-target="#pill-dispensers-list">
 		<label>
 			Serial Number
 			<input type="text" name="serial-number" required/>

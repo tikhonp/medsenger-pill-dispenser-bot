@@ -7,7 +7,7 @@
 create table hardware_type
 (
     id   varchar(255) primary key not null,
-    name varchar(255) not null
+    name varchar(255)             not null
 );
 insert into hardware_type(id, name)
 values ('HW_2x2_V1', '4 ячейки'),
@@ -16,9 +16,9 @@ values ('HW_2x2_V1', '4 ячейки'),
 create table pill_dispenser
 (
     serial_number   varchar(255) primary key not null,
-    hw_type_id  varchar(255) not null,
+    hw_type_id      varchar(255)             not null,
     last_fetch_time datetime default null,
-    contract_id int default null,
+    contract_id     int      default null,
     foreign key (hw_type_id) references hardware_type (id),
     foreign key (contract_id) references contract (id)
 );
@@ -26,7 +26,7 @@ create table pill_dispenser
 create table schedule
 (
     id                               integer primary key autoincrement,
-    is_offline_notifications_allowed boolean                              not null,
+    is_offline_notifications_allowed boolean                            not null,
     refresh_rate_interval            integer, -- durations in seconds
     contract_id                      integer                            not null,
     pill_dispenser_sn                varchar(255)                       not null,

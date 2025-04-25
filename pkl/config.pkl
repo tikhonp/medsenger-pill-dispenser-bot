@@ -19,9 +19,6 @@ class Database {
   dbFilePath: String
 }
 
-/// Text file must contain release version or commit hash.
-releaseFilePath: String
-
 db: Database
 server: Server
 

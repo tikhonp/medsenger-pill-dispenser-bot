@@ -37,6 +37,10 @@ type PillDispensers interface {
 
 	// UnregisterContractID clears contract id for pill-dispenser with specific serial number
 	UnregisterContractID(serialNumber string) error
+
+	// UnregisterByContractID clears contract id for all pill-dispensers with specific set contract id,
+	// useful for clearing up links with pill dispensers on contract deactivation.
+	UnregisterByContractID(contractID int) error
 }
 
 type pillDispensers struct {
@@ -79,7 +83,11 @@ func (pd *pillDispensers) RegisterContractID(serialNumber string, contractID int
 		return err
 	}
 	if pillDispenser.ContractID.Valid {
-		return ErrContractIdAlreadySet
+		if pillDispenser.ContractID.Int64 == int64(contractID) {
+			return nil
+		} else {
+			return ErrContractIdAlreadySet
+		}
 	}
 	_, err = pd.db.Exec("UPDATE pill_dispenser SET contract_id = $1 WHERE serial_number = $2", contractID, serialNumber)
 	return err
@@ -87,5 +95,10 @@ func (pd *pillDispensers) RegisterContractID(serialNumber string, contractID int
 
 func (pd *pillDispensers) UnregisterContractID(serialNumber string) error {
 	_, err := pd.db.Exec("UPDATE pill_dispenser SET contract_id = NULL WHERE serial_number = $1", serialNumber)
+	return err
+}
+
+func (pd *pillDispensers) UnregisterByContractID(contractID int) error {
+	_, err := pd.db.Exec("UPDATE pill_dispenser SET contract_id = NULL WHERE contract_id = $1", contractID)
 	return err
 }

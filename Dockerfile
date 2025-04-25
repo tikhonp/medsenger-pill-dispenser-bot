@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ARG GOVERSION=1.24.2
-ARG PKL_VERSION=0.28.1
+ARG PKL_VERSION=0.28.2
 
 FROM golang:${GOVERSION} AS dev
 RUN go install "github.com/air-verse/air@latest"
@@ -21,8 +21,6 @@ RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 ARG TARGETARCH
 ARG PKL_VERSION
 ADD --chmod=111 "https://github.com/apple/pkl/releases/download/${PKL_VERSION}/pkl-linux-${TARGETARCH}" /bin/pkl
-ARG SOURCE_COMMIT
-RUN echo $SOURCE_COMMIT > release.txt
 WORKDIR /src
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \

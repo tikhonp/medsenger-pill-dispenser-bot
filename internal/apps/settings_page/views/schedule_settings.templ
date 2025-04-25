@@ -24,11 +24,11 @@ templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *model
 			</summary>
 			<form
 				if isNew {
-					hx-post={ string(templ.URL(bviews.Host + "/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
+					hx-post={ string(templ.URL(bviews.Host + "/medsenger/settings/set-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
 					hx-target="#schedules-list"
 					hx-swap="afterbegin"
 				} else {
-					hx-post={ string(templ.URL(bviews.Host + "/settings/edit-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
+					hx-post={ string(templ.URL(bviews.Host + "/medsenger/settings/edit-schedule/" + pd.SerialNumber + "?agent_token=" + contract.AgentToken)) }
 					hx-target={ "#schedule-form-" + strconv.Itoa(s.Schedule.ID) }
 				}
 			>
@@ -99,7 +99,7 @@ templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *model
 templ ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData, contract *models.Contract) {
 	@bviews.Base("Настройки") {
 		<h1>Настройка таблетницы SN: { pd.SerialNumber }</h1>
-		<button type="button" hx-get={ string(templ.URL(bviews.Host + "/settings/set-schedule/" + pd.SerialNumber + "/new-schedule-form" + "?agent_token=" + contract.AgentToken)) } hx-target="#schedules-list" hx-swap="afterbegin">Добавить расписание</button>
+		<button type="button" hx-get={ string(templ.URL(bviews.Host + "/medsenger/settings/set-schedule/" + pd.SerialNumber + "/new-schedule-form" + "?agent_token=" + contract.AgentToken)) } hx-target="#schedules-list" hx-swap="afterbegin">Добавить расписание</button>
 		<br/>
 		<div id="schedules-list">
 			for _, schdl := range schedules {

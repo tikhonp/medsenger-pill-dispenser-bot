@@ -2,10 +2,12 @@ package util
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
@@ -81,6 +83,29 @@ func AgentTokenForm(db db.ModelsFactory) echo.MiddlewareFunc {
 			contract, err := db.Contracts().GetByAgentToken(agentToken)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid agent token", err)
+			}
+			c.Set("contract", *contract)
+			return next(c)
+		}
+	}
+}
+
+func ContractIdQueryParam(db db.ModelsFactory) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			contractIdStr := c.QueryParam("contract_id")
+			if contractIdStr == "" {
+				return echo.NewHTTPError(http.StatusBadRequest, "provide contract id")
+			}
+			contractID, err := strconv.Atoi(contractIdStr)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "invalid contract id")
+			}
+			contract, err := db.Contracts().Get(contractID)
+			if errors.Is(err, sql.ErrNoRows) {
+				return echo.NewHTTPError(http.StatusNotFound, "contract not found")
+			} else if err != nil {
+				return err
 			}
 			c.Set("contract", *contract)
 			return next(c)

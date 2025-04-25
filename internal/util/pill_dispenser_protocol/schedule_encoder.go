@@ -8,23 +8,23 @@ import (
 
 // Schedule data for single pill cell.
 //
-// So there is a defenition of a schedule data memory layout
+// So there is a definition of a schedule data memory layout
 // single struct is for single cell.
 // One packet contains:
 //     - Start time for cell. uint32 timestamp (in seconds)
 //     - End time for cell.   uint32 timestamp (in seconds)
-//     - And single byte for meta data
+//     - And single byte for metadata
 // SO there is 7 bytes per packet. Total data for all cells:
 //
 // [ 4 bytes ][ 4 bytes ][ 1 byte ]|[ 4 bytes ][ 4 bytes ][ 1 byte ]|[ 4 bytes ][ 4 bytes ][ 1 byte ]|[ 4
-//                                 |                                |                                |       etc..
+//                                 |                                |                                |       etc...
 //   0 indx packet -> cell 1       |  1 indx packet -> cell 2       |  2 indx packet -> cell 3       |
 //
 // Last 4 bytes is uint32
 //
 // All data is little endian (esp32 is little endian)
 
-// 4 bytes (uint32) start time timesptamp,
+// 4 bytes (uint32) start time timestamp,
 // 4 bytes (uint32) end time timestamp,
 // 1 byte for metadata
 const cellDataLength = 4 + 4 + 1
