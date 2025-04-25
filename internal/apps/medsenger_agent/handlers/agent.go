@@ -134,6 +134,9 @@ func (mah *MedsengerAgentHandler) Remove(c echo.Context) error {
 	if err := mah.Db.Contracts().MarkInactiveContractWithId(m.ContractId); err != nil {
 		return err
 	}
+	if err := mah.Db.PillDispensers().UnregisterByContractID(m.ContractId); err != nil {
+		return err
+	}
 	return c.String(http.StatusCreated, "ok")
 
 }

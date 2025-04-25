@@ -32,5 +32,17 @@ func (psnah *ProvideSNActionHandler) Post(c echo.Context) error {
 	if regContractIdErr != nil {
 		return err
 	}
+
+	schedule, err := psnah.Db.Schedules().GetLastScheduleForContractID(contract.ID)
+	if err != nil {
+		return err
+	}
+	schedule.Schedule.PillDispenserSN.String = serialNumber
+	schedule.Schedule.PillDispenserSN.Valid = true
+	_, err = psnah.Db.Schedules().EditSchedule(*schedule)
+	if err != nil {
+		return err
+	}
+
 	return util.TemplRender(c, views.ActionSuccess())
 }
