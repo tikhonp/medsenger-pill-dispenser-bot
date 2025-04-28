@@ -24,3 +24,5 @@ server: Server
 
 // Host in https://example.com format
 host: String
+
+sentryDsn: String

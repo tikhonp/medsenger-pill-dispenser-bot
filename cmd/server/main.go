@@ -17,6 +17,11 @@ func initDependencies() util.Dependencies {
 	cfg, err := config.LoadFromPath(context.Background(), "config.pkl")
 	assert.NoErr(err)
 
+	if !cfg.Server.Debug {
+		err = util.StartSentry(cfg.SentryDsn)
+		assert.NoErr(err)
+	}
+
 	// Connect to the database
 	modelsFactory, err := db.Connect(cfg.Db)
 	assert.NoErr(err)

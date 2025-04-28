@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 
+	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	mainpage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/main_page"
@@ -30,6 +31,11 @@ func New(cfg *config.Config) *echo.Echo {
 	} else {
 		e.Use(middleware.Logger())
 	}
+
+	e.Use(middleware.Recover())
+	e.Use(sentryecho.New(sentryecho.Options{
+		Repanic: true,
+	}))
 
 	e.Use(middleware.CORS())
 
