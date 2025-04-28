@@ -13,6 +13,8 @@ type Config struct {
 	Server *Server `pkl:"server"`
 
 	Host string `pkl:"host"`
+
+	SentryDsn string `pkl:"sentryDsn"`
 }
 
 // LoadFromPath loads the pkl module at the given path and evaluates it into a Config
