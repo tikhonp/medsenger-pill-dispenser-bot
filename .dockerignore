@@ -27,3 +27,6 @@ LICENSE
 README.md
 Makefile
 agents_pill_dispenser_nginx.conf
+.air.toml
+.env.example
+.github/

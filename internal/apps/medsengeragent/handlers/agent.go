@@ -1,3 +1,4 @@
+// Package handlers provides HTTP handlers for the Medsenger Agent service.
 package handlers
 
 import (
@@ -38,22 +39,22 @@ type initModel struct {
 	} `json:"params,omitempty"`
 }
 
-func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractId int, ctx echo.Context) {
-	ci, err := mah.Maigo.GetContractInfo(contractId)
+func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractID int, ctx echo.Context) {
+	ci, err := mah.Maigo.GetContractInfo(contractID)
 	if err != nil {
 		// sentry.CaptureException(err)
 		ctx.Logger().Error(err)
 		return
 	}
 
-	err = mah.Db.Contracts().UpdateContractWithPatientData(contractId, ci.PatientName, ci.PatientEmail)
+	err = mah.Db.Contracts().UpdateContractWithPatientData(contractID, ci.PatientName, ci.PatientEmail)
 	if err != nil {
 		// sentry.CaptureException(err)
 		ctx.Logger().Error(err)
 		return
 	}
 	_, err = mah.Maigo.SendMessage(
-		contractId,
+		contractID,
 		"Пожалуйста, введите серийный номер номер, выданного Вам, устройства.",
 		maigo.WithAction("Ввести", "/provide-sn", maigo.Action),
 		maigo.OnlyPatient(),
@@ -67,9 +68,9 @@ func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractId int, ctx ec
 
 func (mah *MedsengerAgentHandler) SaveScheduleOnInit(m *initModel, ctx echo.Context) {
 	schedule := models.New4X4Schedule(m.ContractID)
-	for idx, pillId := range strings.Split(m.Params.PillCells, ",") {
+	for idx, pillID := range strings.Split(m.Params.PillCells, ",") {
 		schedule.Cells[idx].ContentsDescription.Valid = true
-		schedule.Cells[idx].ContentsDescription.String = pillId
+		schedule.Cells[idx].ContentsDescription.String = pillID
 	}
 	_, err := mah.Db.Schedules().NewSchedule(*schedule)
 	if err != nil {
@@ -119,22 +120,22 @@ func (mah *MedsengerAgentHandler) Status(c echo.Context) error {
 
 }
 
-type contractIdModel struct {
-	ContractId int `json:"contract_id" validate:"required"`
+type contractIDModel struct {
+	ContractID int `json:"contract_id" validate:"required"`
 }
 
 func (mah *MedsengerAgentHandler) Remove(c echo.Context) error {
-	m := new(contractIdModel)
+	m := new(contractIDModel)
 	if err := c.Bind(m); err != nil {
 		return err
 	}
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	if err := mah.Db.Contracts().MarkInactiveContractWithId(m.ContractId); err != nil {
+	if err := mah.Db.Contracts().MarkInactiveContractWithId(m.ContractID); err != nil {
 		return err
 	}
-	if err := mah.Db.PillDispensers().UnregisterByContractID(m.ContractId); err != nil {
+	if err := mah.Db.PillDispensers().UnregisterByContractID(m.ContractID); err != nil {
 		return err
 	}
 	return c.String(http.StatusCreated, "ok")
@@ -164,7 +165,9 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 	}
 
 	for _, schedulePoint := range m.Params.Schedule {
-		indx := slices.IndexFunc(schedule.Cells, func(c models.ScheduleCell) bool { return c.ContentsDescription.String == strconv.Itoa(schedulePoint[0]) })
+		indx := slices.IndexFunc(schedule.Cells, func(c models.ScheduleCell) bool {
+			return c.ContentsDescription.String == strconv.Itoa(schedulePoint[0])
+		})
 		if indx != -1 {
 			schedule.Cells[indx].StartTime.Time = time.Unix(int64(schedulePoint[1]), 0)
 			schedule.Cells[indx].StartTime.Valid = true

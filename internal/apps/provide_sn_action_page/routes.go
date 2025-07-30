@@ -10,8 +10,8 @@ func ConfigureProvideSNActionGroup(g *echo.Group, deps util.Dependencies) {
 	psnah := handlers.ProvideSNActionHandler(deps)
 
 	g.Use(
-		util.ApiKeyGetParam(deps.Cfg.Server),
-		util.ContractIdQueryParam(deps.Db),
+		util.APIKeyGetParam(deps.Cfg.Server),
+		util.ContractIDQueryParam(deps.Db),
 	)
 
 	g.GET("", psnah.Get)

@@ -6,7 +6,37 @@ services:
       target: dev
     ports:
       - "3054:3054"
-    volumes:
-      - ./:/src
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
     environment:
       - SOURCE_COMMIT=${SOURCE_COMMIT}
+      - DEBUG=true
+    volumes:
+      - ./:/src
+  
+  db:
+    container_name: pill-dispenser-bot-dev-db
+    image: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_USER=${DB_LOGIN}
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-U", "${DB_LOGIN}", "-d", "${DB_DATABASE}" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+    name: "pilldispenser-db-data"

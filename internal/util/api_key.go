@@ -1,3 +1,4 @@
+// Package util provides utility functions and middleware for the Medsenger Pill Dispenser Bot.
 package util
 
 import (
@@ -10,20 +11,20 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/config"
 )
 
 type apiKeyModel struct {
-	ApiKey string `json:"api_key" validate:"required"`
+	APIKey string `json:"api_key" validate:"required"`
 }
 
 func (k *apiKeyModel) isValid(cfg *config.Server) bool {
-	return cfg.MedsengerAgentKey == k.ApiKey
+	return cfg.MedsengerAgentKey == k.APIKey
 }
 
-func ApiKeyJSON(cfg *config.Server) echo.MiddlewareFunc {
+func APIKeyJSON(cfg *config.Server) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Workaround to read request body twice
@@ -50,7 +51,7 @@ func ApiKeyJSON(cfg *config.Server) echo.MiddlewareFunc {
 	}
 }
 
-func ApiKeyGetParam(cfg *config.Server) echo.MiddlewareFunc {
+func APIKeyGetParam(cfg *config.Server) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			apiKey := c.QueryParam("api_key")
@@ -90,14 +91,14 @@ func AgentTokenForm(db db.ModelsFactory) echo.MiddlewareFunc {
 	}
 }
 
-func ContractIdQueryParam(db db.ModelsFactory) echo.MiddlewareFunc {
+func ContractIDQueryParam(db db.ModelsFactory) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			contractIdStr := c.QueryParam("contract_id")
-			if contractIdStr == "" {
+			contractIDStr := c.QueryParam("contract_id")
+			if contractIDStr == "" {
 				return echo.NewHTTPError(http.StatusBadRequest, "provide contract id")
 			}
-			contractID, err := strconv.Atoi(contractIdStr)
+			contractID, err := strconv.Atoi(contractIDStr)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "invalid contract id")
 			}

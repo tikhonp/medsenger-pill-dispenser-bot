@@ -1,23 +1,21 @@
 services:
   server:
     container_name: pill-dispenser-agent
-    restart: always
-    build:
-      context: .
-      target: prod
-    ports:
-      - "3054:3054"
-    command: server
+    image: docker.telepat.online/agents-pilldispenser-image:latest
+    restart: unless-stopped
+    entrypoint: |
+      /bin/sh -c '
+        goose postgres "$(manage -c print-db-string)" -dir=internal/db/migrations up
+        server
+      '
+    network_mode: "host"
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    volumes:
-      - db-data:/tmp/sqlite-db
+    env_file:
+      - .env
     environment:
       - SOURCE_COMMIT=${SOURCE_COMMIT}
-
-volumes:
-  db-data:
-    name: "pill-dispenser-db-data"
+      - DEBUG=false

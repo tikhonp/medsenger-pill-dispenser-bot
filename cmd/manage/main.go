@@ -1,22 +1,21 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/assert"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/config"
 )
 
 type command string
 
 const (
-	// PrintDbString prints the database configuration string
+	// PrintDBString prints the database configuration string
 	// for sql connection
-	PrintDbString command = "print-db-string"
+	PrintDBString command = "print-db-string"
 
 	// AddPillDispenser adds new pill dispenser with serial number and hardware type
 	AddPillDispenser command = "add-pill-dispenser"
@@ -24,7 +23,7 @@ const (
 
 func (c *command) Set(value string) error {
 	switch command(value) {
-	case PrintDbString, AddPillDispenser:
+	case PrintDBString, AddPillDispenser:
 		*c = command(value)
 		return nil
 	default:
@@ -63,9 +62,9 @@ func parseFlags() *manageConfig {
 	return cfg
 }
 
-func printDbString(cfg *config.Config) {
+func printDBString(cfg *config.Config) {
 	fmt.Print(
-		cfg.Db.DbFilePath,
+		db.DataSourceName(cfg.DB),
 	)
 }
 
@@ -88,7 +87,7 @@ func addPillDispenser(cfg *config.Config, serialNumber string, hwType models.Har
 	assert.C(serialNumber != "", "provide serial number")
 	assert.C(hwType == models.HardwareType2x2 || hwType == models.HardwareType4x7, "provide hardware type")
 
-	modelsFactory, err := db.Connect(cfg.Db)
+	modelsFactory, err := db.Connect(cfg.DB)
 	assert.NoErr(err)
 
 	assert.NoErr(
@@ -98,13 +97,11 @@ func addPillDispenser(cfg *config.Config, serialNumber string, hwType models.Har
 
 func main() {
 	manageConfig := parseFlags()
-
-	cfg, err := config.LoadFromPath(context.Background(), manageConfig.configPath)
-	assert.NoErr(err)
+	cfg := config.LoadConfigFromEnv()
 
 	switch manageConfig.command {
-	case PrintDbString:
-		printDbString(cfg)
+	case PrintDBString:
+		printDBString(cfg)
 	case AddPillDispenser:
 		if manageConfig.addPillDispenserInteractive {
 			addPillDispenserInteractive(cfg)

@@ -3,7 +3,7 @@ SOURCE_COMMIT_SHA := $(shell git rev-parse HEAD)
 ENVS := SOURCE_COMMIT=${SOURCE_COMMIT_SHA} COMPOSE_BAKE=true
 
 
-.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container pkl-gen db-status db-up db-down db-reset templ add-pill-dispenser
+.PHONY: run dev build-dev fdev prod fprod logs-prod go-to-server-container pkl-gen db-status db-up db-down db-reset templ add-pill-dispenser build-prod-image
 
 run: dev
 
@@ -12,6 +12,9 @@ dev:
 
 build-dev:
 	${ENVS} docker compose -f compose.yaml up --build
+
+fdev:
+	${ENVS} docker compose -f compose.yaml down
 
 prod:
 	${ENVS} docker compose -f compose.prod.yaml up --build -d
@@ -23,19 +26,19 @@ logs-prod:
 	${ENVS} docker compose -f compose.prod.yaml logs -f -n 100
 
 go-to-server-container:
-	docker exec -it --tty pill-dispenser-agent /bin/bash
+	docker exec -it --tty pill-dispenser-agent /bin/sh
 
 db-status:
-	docker exec -it --tty pill-dispenser-agent goose sqlite3 "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations status
+	docker exec -it --tty pill-dispenser-agent goose postgres "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations status
 
 db-up:
-	docker exec -it --tty pill-dispenser-agent goose sqlite3 "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations up
+	docker exec -it --tty pill-dispenser-agent goose postgres "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations up
 
 db-down:
-	docker exec -it --tty pill-dispenser-agent goose sqlite3 "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations down
+	docker exec -it --tty pill-dispenser-agent goose postgres "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations down
 
 db-reset:
-	docker exec -it --tty pill-dispenser-agent goose sqlite3 "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations reset
+	docker exec -it --tty pill-dispenser-agent goose postgres "$(shell docker exec -it pill-dispenser-agent /bin/manage -c print-db-string)" -dir=internal/db/migrations reset
 
 pkl-gen:
 	docker exec -it --tty pill-dispenser-agent pkl-gen-go pkl/config.pkl --base-path github.com/tikhonp/medsenger-pill-dispenser-bot
@@ -45,3 +48,6 @@ templ:
 
 add-pill-dispenser:
 	docker exec -it --tty pill-dispenser-agent manage -c add-pill-dispenser -i
+
+build-prod-image:
+	${ENVS} docker build -t docker.telepat.online/agents-pilldispenser-image:latest --target prod .

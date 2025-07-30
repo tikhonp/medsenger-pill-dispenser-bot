@@ -2,8 +2,8 @@ package util
 
 import (
 	"github.com/TikhonP/maigo"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/config"
 )
 
 type Dependencies struct {

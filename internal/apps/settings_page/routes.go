@@ -9,7 +9,7 @@ import (
 func ConfigureSettingsPageGroup(g *echo.Group, deps util.Dependencies) {
 	sph := handlers.SettingsPageHandler(deps)
 
-	g.GET("", sph.SettingsGet, util.ApiKeyGetParam(deps.Cfg.Server), util.ContractIdQueryParam(deps.Db))
+	g.GET("", sph.SettingsGet, util.APIKeyGetParam(deps.Cfg.Server), util.ContractIDQueryParam(deps.Db))
 
 	agentApiGetGroup := g.Group("/set-schedule", util.AgentTokenGetParam(deps.Db))
 	agentApiGetGroup.GET("/:serial-number", sph.SetScheduleGet)

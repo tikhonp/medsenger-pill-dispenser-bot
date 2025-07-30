@@ -1,29 +1,25 @@
 package main
 
 import (
-	"context"
-
 	"github.com/TikhonP/maigo"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/router"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/assert"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/config"
 )
 
 func initDependencies() util.Dependencies {
-	// Read the configuration from the pkl file
-	cfg, err := config.LoadFromPath(context.Background(), "config.pkl")
-	assert.NoErr(err)
+	cfg := config.LoadConfigFromEnv()
 
 	if !cfg.Server.Debug {
-		err = util.StartSentry(cfg.SentryDsn)
+		err := util.StartSentry(cfg.SentryDSN)
 		assert.NoErr(err)
 	}
 
 	// Connect to the database
-	modelsFactory, err := db.Connect(cfg.Db)
+	modelsFactory, err := db.Connect(cfg.DB)
 	assert.NoErr(err)
 
 	maigoClient := maigo.Init(cfg.Server.MedsengerAgentKey)

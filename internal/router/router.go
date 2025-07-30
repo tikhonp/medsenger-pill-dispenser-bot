@@ -1,3 +1,4 @@
+// Package router provides the HTTP server and routes for the application.
 package router
 
 import (
@@ -7,12 +8,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	mainpage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/main_page"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsenger_agent"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsengeragent"
 	pilldispenser "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/pill_dispenser"
 	providesnactionpage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/provide_sn_action_page"
 	settingspage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/settings_page"
-	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/config"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/config"
 )
 
 func New(cfg *config.Config) *echo.Echo {
@@ -47,7 +48,7 @@ func New(cfg *config.Config) *echo.Echo {
 func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
 	mainpage.ConfigureMainPageGroup(e.Group(""), deps)
 	pilldispenser.ConfigurePillDispenserGroup(e.Group("/pill-dispenser"), deps)
-	medsenger_agent.ConfigureMedsengerAgentGroup(e.Group("/medsenger"), deps)
+	medsengeragent.ConfigureMedsengerAgentGroup(e.Group("/medsenger"), deps)
 	settingspage.ConfigureSettingsPageGroup(e.Group("/medsenger/settings"), deps)
 	providesnactionpage.ConfigureProvideSNActionGroup(e.Group("/provide-sn"), deps)
 }

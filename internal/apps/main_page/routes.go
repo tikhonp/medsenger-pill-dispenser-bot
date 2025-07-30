@@ -1,3 +1,4 @@
+// Package mainpage provides the main page route for the application.
 package mainpage
 
 import (
