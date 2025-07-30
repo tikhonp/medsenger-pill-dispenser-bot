@@ -180,9 +180,9 @@ func (s *schedule) GetPillNameAndContractID(serialNumber string, cellIndex int) 
     LIMIT 1
     `
 	var pillName string
-	var contractId int
-	err := s.db.QueryRow(query, serialNumber, cellIndex).Scan(&pillName, &contractId)
-	return pillName, contractId, err
+	var contractID int
+	err := s.db.QueryRow(query, serialNumber, cellIndex).Scan(&pillName, &contractID)
+	return pillName, contractID, err
 }
 
 func (s *schedule) GetLastScheduleForContractID(contractID int) (*ScheduleData, error) {

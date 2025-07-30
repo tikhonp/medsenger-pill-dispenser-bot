@@ -1,3 +1,4 @@
+// Package handlers provides HTTP handlers for the Medsenger Pill Dispenser Bot service.
 package handlers
 
 import (
@@ -22,14 +23,14 @@ func (psnah *ProvideSNActionHandler) Post(c echo.Context) error {
 	if serialNumber == "" {
 		return util.TemplRender(c, views.ActionPage("Серийный номер не может быть пустым"))
 	}
-	regContractIdErr := psnah.Db.PillDispensers().RegisterContractID(serialNumber, contract.ID)
-	if errors.Is(regContractIdErr, models.ErrPillDispenserNotExists) {
+	regContractIDErr := psnah.Db.PillDispensers().RegisterContractID(serialNumber, contract.ID)
+	if errors.Is(regContractIDErr, models.ErrPillDispenserNotExists) {
 		return util.TemplRender(c, views.ActionPage("Устройство с таким серийным номером не найдено."))
 	}
-	if errors.Is(regContractIdErr, models.ErrContractIdAlreadySet) {
+	if errors.Is(regContractIDErr, models.ErrContractIDAlreadySet) {
 		return util.TemplRender(c, views.ActionPage("Это устройство уже привязано к другому контракту, сначала отвяжите."))
 	}
-	if regContractIdErr != nil {
+	if regContractIDErr != nil {
 		return err
 	}
 

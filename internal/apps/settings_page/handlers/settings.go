@@ -39,18 +39,18 @@ func (mah *SettingsPageHandler) AddContractPillDispenser(c echo.Context) error {
 		}
 		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Введите серийный номер"))
 	}
-	regContractIdErr := mah.Db.PillDispensers().RegisterContractID(serialNumber, contract.ID)
+	regContractIDErr := mah.Db.PillDispensers().RegisterContractID(serialNumber, contract.ID)
 	pillDispensers, err := mah.Db.PillDispensers().GetAllByContractID(contract.ID)
 	if err != nil {
 		return err
 	}
-	if errors.Is(regContractIdErr, models.ErrPillDispenserNotExists) {
+	if errors.Is(regContractIDErr, models.ErrPillDispenserNotExists) {
 		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Устройство с таким серийным номером не найдено."))
 	}
-	if errors.Is(regContractIdErr, models.ErrContractIdAlreadySet) {
+	if errors.Is(regContractIDErr, models.ErrContractIDAlreadySet) {
 		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Это устройство уже привязано к другому контракту, сначала отвяжите."))
 	}
-	if regContractIdErr != nil {
+	if regContractIDErr != nil {
 		return err
 	}
 	return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, ""))
@@ -163,12 +163,12 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 
 	schedule := models.NewSchedule(pillDispenser)
 
-	scheduleIdStr := c.FormValue("schedule-id")
-	scheduleId, err := strconv.Atoi(scheduleIdStr)
+	scheduleIDStr := c.FormValue("schedule-id")
+	scheduleID, err := strconv.Atoi(scheduleIDStr)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid schedule id")
 	}
-	schedule.Schedule.ID = scheduleId
+	schedule.Schedule.ID = scheduleID
 
 	offlineNotify := c.FormValue("offline-notify") == "on"
 	schedule.Schedule.IsOfflineNotificationsAllowed = offlineNotify
@@ -195,7 +195,7 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 		contentsDescription := c.FormValue("cell-contents-description-" + strconv.Itoa(i))
 		schedule.Cells[i] = models.ScheduleCell{
 			Index:               i,
-			ScheduleID:          scheduleId,
+			ScheduleID:          scheduleID,
 			StartTime:           sql.NullTime{Valid: true, Time: cellStartTime},
 			EndTime:             sql.NullTime{Valid: true, Time: cellEndTime},
 			ContentsDescription: sql.NullString{Valid: true, String: contentsDescription},

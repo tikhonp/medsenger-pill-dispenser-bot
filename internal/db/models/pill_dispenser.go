@@ -15,7 +15,7 @@ type PillDispenser struct {
 }
 
 var (
-	ErrContractIdAlreadySet   = errors.New("contract id already set for this pill dispenser")
+	ErrContractIDAlreadySet   = errors.New("contract id already set for this pill dispenser")
 	ErrPillDispenserNotExists = errors.New("pill dispenser not exists for specified serial number")
 )
 
@@ -86,7 +86,7 @@ func (pd *pillDispensers) RegisterContractID(serialNumber string, contractID int
 		if pillDispenser.ContractID.Int64 == int64(contractID) {
 			return nil
 		} else {
-			return ErrContractIdAlreadySet
+			return ErrContractIDAlreadySet
 		}
 	}
 	_, err = pd.db.Exec("UPDATE pill_dispenser SET contract_id = $1 WHERE serial_number = $2", contractID, serialNumber)
