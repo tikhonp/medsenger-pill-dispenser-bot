@@ -55,5 +55,6 @@ func LoadConfigFromEnv() *Config {
 			Host:     os.Getenv("DB_HOST"),
 		},
 		SentryDSN: os.Getenv("SENTRY_DSN"),
+		Host: os.Getenv("HOST"),
 	}
 }
