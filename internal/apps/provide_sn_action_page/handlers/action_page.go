@@ -23,7 +23,7 @@ func (psnah *ProvideSNActionHandler) Post(c echo.Context) error {
 	if serialNumber == "" {
 		return util.TemplRender(c, views.ActionPage("Серийный номер не может быть пустым"))
 	}
-	regContractIDErr := psnah.Db.PillDispensers().RegisterContractID(serialNumber, contract.ID)
+	regContractIDErr := psnah.DB.PillDispensers().RegisterContractID(serialNumber, contract.ID)
 	if errors.Is(regContractIDErr, models.ErrPillDispenserNotExists) {
 		return util.TemplRender(c, views.ActionPage("Устройство с таким серийным номером не найдено."))
 	}
@@ -34,13 +34,13 @@ func (psnah *ProvideSNActionHandler) Post(c echo.Context) error {
 		return err
 	}
 
-	schedule, err := psnah.Db.Schedules().GetLastScheduleForContractID(contract.ID)
+	schedule, err := psnah.DB.Schedules().GetLastScheduleForContractID(contract.ID)
 	if err != nil {
 		return err
 	}
 	schedule.Schedule.PillDispenserSN.String = serialNumber
 	schedule.Schedule.PillDispenserSN.Valid = true
-	_, err = psnah.Db.Schedules().EditSchedule(*schedule)
+	_, err = psnah.DB.Schedules().EditSchedule(*schedule)
 	if err != nil {
 		return err
 	}

@@ -1,3 +1,4 @@
+// Package handlers provides HTTP handlers for the pill dispenser service.
 package handlers
 
 import (
@@ -17,11 +18,11 @@ func (pdh *PillDispenserHandler) GetSchedule(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "provide serial number")
 	}
 
-	schedule, err := pdh.Db.Schedules().GetScheduleForSN(serialNumber)
+	schedule, err := pdh.DB.Schedules().GetScheduleForSN(serialNumber)
 	if errors.Is(err, models.ErrNoSchedule) {
-		pillDispenser, err := pdh.Db.PillDispensers().Get(serialNumber)
+		pillDispenser, err := pdh.DB.PillDispensers().Get(serialNumber)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "pill dispenser not found")
+			return echo.NewHTTPError(http.StatusNotFound, "pill dispenser not found: "+err.Error())
 		}
 
 		return c.Blob(http.StatusOK, ContentTypeOctetStream, pilldispenserprotocol.EmptySchedule(pillDispenser.HWType.GetCellsCount()))

@@ -19,12 +19,12 @@ func (pdh *PillDispenserHandler) SubmitPills(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	pillName, contactId, err := pdh.Db.Schedules().GetPillNameAndContractID(serialNumber, cellIndex)
+	pillName, contactID, err := pdh.DB.Schedules().GetPillNameAndContractID(serialNumber, cellIndex)
 	if err != nil {
 		return err
 	}
 
-	_, err = pdh.Maigo.AddRecord(contactId, "medicine", pillName, submitTime, nil)
+	_, err = pdh.Maigo.AddRecord(contactID, "medicine", pillName, submitTime, nil)
 	if err != nil {
 		return err
 	}

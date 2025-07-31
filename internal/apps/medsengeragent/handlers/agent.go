@@ -47,7 +47,7 @@ func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractID int, ctx ec
 		return
 	}
 
-	err = mah.Db.Contracts().UpdateContractWithPatientData(contractID, ci.PatientName, ci.PatientEmail)
+	err = mah.DB.Contracts().UpdateContractWithPatientData(contractID, ci.PatientName, ci.PatientEmail)
 	if err != nil {
 		// sentry.CaptureException(err)
 		ctx.Logger().Error(err)
@@ -72,7 +72,7 @@ func (mah *MedsengerAgentHandler) SaveScheduleOnInit(m *initModel, ctx echo.Cont
 		schedule.Cells[idx].ContentsDescription.Valid = true
 		schedule.Cells[idx].ContentsDescription.String = pillID
 	}
-	_, err := mah.Db.Schedules().NewSchedule(*schedule)
+	_, err := mah.DB.Schedules().NewSchedule(*schedule)
 	if err != nil {
 		// sentry.CaptureException(err)
 		ctx.Logger().Error(err)
@@ -88,7 +88,7 @@ func (mah *MedsengerAgentHandler) Init(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	err := mah.Db.Contracts().NewContract(m.ContractID, m.ClinicID, m.AgentToken, m.PatientAgentToken, m.DoctorAgentToken, m.Locale)
+	err := mah.DB.Contracts().NewContract(m.ContractID, m.ClinicID, m.AgentToken, m.PatientAgentToken, m.DoctorAgentToken, m.Locale)
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ type statusResponseModel struct {
 }
 
 func (mah *MedsengerAgentHandler) Status(c echo.Context) error {
-	trackedContracts, err := mah.Db.Contracts().GetActiveContractIds()
+	trackedContracts, err := mah.DB.Contracts().GetActiveContractIds()
 	if err != nil {
 		return err
 	}
@@ -132,10 +132,10 @@ func (mah *MedsengerAgentHandler) Remove(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	if err := mah.Db.Contracts().MarkInactiveContractWithID(m.ContractID); err != nil {
+	if err := mah.DB.Contracts().MarkInactiveContractWithID(m.ContractID); err != nil {
 		return err
 	}
-	if err := mah.Db.PillDispensers().UnregisterByContractID(m.ContractID); err != nil {
+	if err := mah.DB.PillDispensers().UnregisterByContractID(m.ContractID); err != nil {
 		return err
 	}
 	return c.String(http.StatusCreated, "ok")
@@ -159,7 +159,7 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	schedule, err := mah.Db.Schedules().GetLastScheduleForContractID(m.ContractID)
+	schedule, err := mah.DB.Schedules().GetLastScheduleForContractID(m.ContractID)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 		}
 	}
 
-	_, err = mah.Db.Schedules().EditSchedule(*schedule)
+	_, err = mah.DB.Schedules().EditSchedule(*schedule)
 	if err != nil {
 		return err
 	}

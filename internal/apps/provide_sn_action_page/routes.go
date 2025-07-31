@@ -1,3 +1,4 @@
+// Package providesnactionpage contains the routes for the Provide SN Action page.
 package providesnactionpage
 
 import (
@@ -11,7 +12,7 @@ func ConfigureProvideSNActionGroup(g *echo.Group, deps util.Dependencies) {
 
 	g.Use(
 		util.APIKeyGetParam(deps.Cfg.Server),
-		util.ContractIDQueryParam(deps.Db),
+		util.ContractIDQueryParam(deps.DB),
 	)
 
 	g.GET("", psnah.Get)

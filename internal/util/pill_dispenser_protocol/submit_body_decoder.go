@@ -1,3 +1,4 @@
+// Package pilldispenserprotocol provides functionality to decode the body of a submit message from a pill dispenser.
 package pilldispenserprotocol
 
 import (

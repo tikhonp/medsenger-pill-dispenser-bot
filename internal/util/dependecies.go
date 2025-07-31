@@ -9,13 +9,13 @@ import (
 type Dependencies struct {
 	Cfg   *config.Config
 	Maigo *maigo.Client
-	Db    db.ModelsFactory
+	DB    db.ModelsFactory
 }
 
 func NewDependencies(cfg *config.Config, maigo *maigo.Client, db db.ModelsFactory) Dependencies {
 	return Dependencies{
 		Cfg:   cfg,
 		Maigo: maigo,
-		Db:    db,
+		DB:    db,
 	}
 }

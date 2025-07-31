@@ -22,8 +22,8 @@ create table hardware_type
     name varchar(255)             not null
 );
 insert into hardware_type(id, name)
-values ('HW_2x2_V1', '4 ячейки'),
-       ('HW_4x7_V1', '28 ячеек');
+values ('HW_2X2_V1', '4 ячейки'),
+       ('HW_4X7_V1', '28 ячеек');
 
 create table pill_dispenser
 (

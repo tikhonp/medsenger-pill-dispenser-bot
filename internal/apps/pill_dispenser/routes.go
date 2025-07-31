@@ -1,3 +1,4 @@
+// Package pilldispenser provides the routes for the pill dispenser bot.
 package pilldispenser
 
 import (

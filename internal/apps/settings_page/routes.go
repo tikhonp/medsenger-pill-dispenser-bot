@@ -1,3 +1,4 @@
+// Package settingspage provides the routes for the settings page of the application.
 package settingspage
 
 import (
@@ -9,16 +10,16 @@ import (
 func ConfigureSettingsPageGroup(g *echo.Group, deps util.Dependencies) {
 	sph := handlers.SettingsPageHandler(deps)
 
-	g.GET("", sph.SettingsGet, util.APIKeyGetParam(deps.Cfg.Server), util.ContractIDQueryParam(deps.Db))
+	g.GET("", sph.SettingsGet, util.APIKeyGetParam(deps.Cfg.Server), util.ContractIDQueryParam(deps.DB))
 
-	agentApiGetGroup := g.Group("/set-schedule", util.AgentTokenGetParam(deps.Db))
-	agentApiGetGroup.GET("/:serial-number", sph.SetScheduleGet)
-	agentApiGetGroup.POST("/:serial-number", sph.SetSchedulePost)
-	agentApiGetGroup.GET("/:serial-number/new-schedule-form", sph.GetNewScheduleForm)
+	agentAPIGetGroup := g.Group("/set-schedule", util.AgentTokenGetParam(deps.DB))
+	agentAPIGetGroup.GET("/:serial-number", sph.SetScheduleGet)
+	agentAPIGetGroup.POST("/:serial-number", sph.SetSchedulePost)
+	agentAPIGetGroup.GET("/:serial-number/new-schedule-form", sph.GetNewScheduleForm)
 
-	g.POST("/edit-schedule/:serial-number", sph.EditSchedulePost, util.AgentTokenGetParam(deps.Db))
+	g.POST("/edit-schedule/:serial-number", sph.EditSchedulePost, util.AgentTokenGetParam(deps.DB))
 
-	agentApiFormGroup := g.Group("/pill-dispenser", util.AgentTokenForm(sph.Db))
-	agentApiFormGroup.POST("", sph.AddContractPillDispenser)
-	agentApiFormGroup.DELETE("", sph.RemoveContractPillDispenser)
+	agentAPIFormGroup := g.Group("/pill-dispenser", util.AgentTokenForm(sph.DB))
+	agentAPIFormGroup.POST("", sph.AddContractPillDispenser)
+	agentAPIFormGroup.DELETE("", sph.RemoveContractPillDispenser)
 }

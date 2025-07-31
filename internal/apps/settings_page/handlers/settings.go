@@ -18,7 +18,7 @@ func (mah *SettingsPageHandler) SettingsGet(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	pillDispensers, err := mah.Db.PillDispensers().GetAllByContractID(contract.ID)
+	pillDispensers, err := mah.DB.PillDispensers().GetAllByContractID(contract.ID)
 	if err != nil {
 		return err
 	}
@@ -33,14 +33,14 @@ func (mah *SettingsPageHandler) AddContractPillDispenser(c echo.Context) error {
 	}
 	serialNumber := c.FormValue("serial-number")
 	if serialNumber == "" {
-		pillDispensers, err := mah.Db.PillDispensers().GetAllByContractID(contract.ID)
+		pillDispensers, err := mah.DB.PillDispensers().GetAllByContractID(contract.ID)
 		if err != nil {
 			return err
 		}
 		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Введите серийный номер"))
 	}
-	regContractIDErr := mah.Db.PillDispensers().RegisterContractID(serialNumber, contract.ID)
-	pillDispensers, err := mah.Db.PillDispensers().GetAllByContractID(contract.ID)
+	regContractIDErr := mah.DB.PillDispensers().RegisterContractID(serialNumber, contract.ID)
+	pillDispensers, err := mah.DB.PillDispensers().GetAllByContractID(contract.ID)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (mah *SettingsPageHandler) RemoveContractPillDispenser(c echo.Context) erro
 	if serialNumber == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "provide serial number")
 	}
-	err := mah.Db.PillDispensers().UnregisterContractID(serialNumber)
+	err := mah.DB.PillDispensers().UnregisterContractID(serialNumber)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (mah *SettingsPageHandler) pillDispenserPagesCommon(c echo.Context) (*model
 		return nil, nil, err
 	}
 	serialNumber := c.Param("serial-number")
-	pillDispenser, err := mah.Db.PillDispensers().Get(serialNumber)
+	pillDispenser, err := mah.DB.PillDispensers().Get(serialNumber)
 	if err != nil {
 		return nil, nil, echo.NewHTTPError(http.StatusNotFound)
 	}
@@ -89,7 +89,7 @@ func (mah *SettingsPageHandler) SetScheduleGet(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	schedules, err := mah.Db.Schedules().GetSchedules(pillDispenser.SerialNumber, int(pillDispenser.ContractID.Int64))
+	schedules, err := mah.DB.Schedules().GetSchedules(pillDispenser.SerialNumber, int(pillDispenser.ContractID.Int64))
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (mah *SettingsPageHandler) SetSchedulePost(c echo.Context) error {
 		}
 	}
 
-	newSchedule, err := mah.Db.Schedules().NewSchedule(*schedule)
+	newSchedule, err := mah.DB.Schedules().NewSchedule(*schedule)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 		}
 	}
 
-	newSchedule, err := mah.Db.Schedules().EditSchedule(*schedule)
+	newSchedule, err := mah.DB.Schedules().EditSchedule(*schedule)
 	if err != nil {
 		return err
 	}
