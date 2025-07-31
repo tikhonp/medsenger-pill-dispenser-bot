@@ -53,7 +53,7 @@ func NewPillDispensers(db *sqlx.DB) PillDispensers {
 
 func (pd *pillDispensers) Get(serialNumber string) (*PillDispenser, error) {
 	var pillDispenser PillDispenser
-	err := pd.db.Get(&pillDispenser, "SELECT * FROM pill_dispenser WHERE serial_number == $1", serialNumber)
+	err := pd.db.Get(&pillDispenser, "SELECT * FROM pill_dispenser WHERE serial_number = $1", serialNumber)
 	return &pillDispenser, err
 }
 
