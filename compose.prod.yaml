@@ -1,5 +1,5 @@
 services:
-  server:
+  agents-pilldispenser:
     image: docker.telepat.online/agents-pilldispenser-image:latest
     container_name: pill-dispenser-agent
     env_file:
