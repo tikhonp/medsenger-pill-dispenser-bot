@@ -24,6 +24,8 @@ type Database struct {
 	Dbname string
 
 	Host string
+
+	Port int
 }
 
 type Server struct {
@@ -42,6 +44,10 @@ func LoadConfigFromEnv() *Config {
 	if err != nil {
 		panic(err)
 	}
+	dbPort, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	if err != nil {
+		panic(err)
+	}
 	return &Config{
 		Server: &Server{
 			Port:              uint16(serverPort),
@@ -53,8 +59,9 @@ func LoadConfigFromEnv() *Config {
 			Password: os.Getenv("DB_PASSWORD"),
 			Dbname:   os.Getenv("DB_DATABASE"),
 			Host:     os.Getenv("DB_HOST"),
+			Port:     dbPort,
 		},
 		SentryDSN: os.Getenv("SENTRY_DSN"),
-		Host: os.Getenv("HOST"),
+		Host:      os.Getenv("HOST"),
 	}
 }
