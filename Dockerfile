@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GOVERSION=1.24.5
+ARG GOVERSION=1.24.6
 
 FROM golang:${GOVERSION}-alpine AS dev
 RUN go install "github.com/air-verse/air@latest" && \
@@ -27,3 +27,9 @@ FROM alpine AS prod
 WORKDIR /src
 COPY --from=build-prod /bin/server /bin/manage /go/bin/goose /bin/
 COPY . .
+EXPOSE 80
+ENV DEBUG=false
+ARG SOURCE_COMMIT
+ENV SOURCE_COMMIT=${SOURCE_COMMIT}
+ENV SERVER_PORT=80
+ENTRYPOINT ["/bin/sh", "-c", "goose postgres \"$(manage -c print-db-string)\" -dir=internal/db/migrations up && server"]

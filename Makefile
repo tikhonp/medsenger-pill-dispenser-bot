@@ -17,13 +17,13 @@ fdev:
 	${ENVS} docker compose -f compose.yaml down
 
 prod:
-	${ENVS} docker compose -f compose.prod.yaml up --build -d
+	docker compose -f compose.test-prod.yaml up --build -d
 
 fprod:
-	${ENVS} docker compose -f compose.prod.yaml down
+	docker compose -f compose.test-prod.yaml down
 
 logs-prod:
-	${ENVS} docker compose -f compose.prod.yaml logs -f -n 100
+	docker compose -f compose.test-prod.yaml logs -f -n 100
 
 go-to-server-container:
 	docker exec -it --tty pill-dispenser-agent /bin/sh
@@ -50,4 +50,4 @@ add-pill-dispenser:
 	docker exec -it --tty pill-dispenser-agent manage -c add-pill-dispenser -i
 
 build-prod-image:
-	${ENVS} docker build -t docker.telepat.online/agents-pilldispenser-image:latest --target prod .
+	docker buildx build --build-arg SOURCE_COMMIT="${SOURCE_COMMIT_SHA}" --target prod -t docker.telepat.online/agents-pilldispenser-image:latest .

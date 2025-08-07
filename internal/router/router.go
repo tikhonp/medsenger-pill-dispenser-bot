@@ -3,6 +3,7 @@ package router
 
 import (
 	"fmt"
+	"time"
 
 	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
@@ -21,6 +22,7 @@ func New(cfg *config.Config) *echo.Echo {
 
 	e.HideBanner = true
 	e.Debug = cfg.Server.Debug
+	e.Validator = util.NewDefaultValidator()
 
 	e.Pre(middleware.RemoveTrailingSlash())
 
@@ -30,17 +32,16 @@ func New(cfg *config.Config) *echo.Echo {
 			Output: e.Logger.Output(),
 		}))
 	} else {
+		e.Use(sentryecho.New(sentryecho.Options{
+			Repanic:         true,
+			WaitForDelivery: false,
+			Timeout:         5 * time.Second,
+		}))
 		e.Use(middleware.Logger())
 	}
 
 	e.Use(middleware.Recover())
-	e.Use(sentryecho.New(sentryecho.Options{
-		Repanic: true,
-	}))
-
 	e.Use(middleware.CORS())
-
-	e.Validator = util.NewDefaultValidator()
 
 	return e
 }

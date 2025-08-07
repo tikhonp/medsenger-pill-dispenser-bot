@@ -109,6 +109,7 @@ func (s *schedule) NewSchedule(schedule ScheduleData) (*ScheduleData, error) {
 	if err != nil {
 		return &schedule, err
 	}
+	q = tx.Rebind(q)
 	err = tx.QueryRowx(q, args...).StructScan(&schedule.Schedule)
 	if err != nil {
 		_ = tx.Rollback()
@@ -149,6 +150,7 @@ func (s *schedule) EditSchedule(schedule ScheduleData) (*ScheduleData, error) {
 	if err != nil {
 		return &schedule, err
 	}
+	q = tx.Rebind(q)
 	err = tx.QueryRowx(q, args...).StructScan(&schedule.Schedule)
 	if err != nil {
 		_ = tx.Rollback()

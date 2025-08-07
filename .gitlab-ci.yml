@@ -14,7 +14,6 @@ variables:
   DOCKER_HOST: tcp://docker:2375
   REGISTRY: docker.telepat.online
   IMAGE_NAME: agents-pilldispenser-image
-  SOURCE_COMMIT: $CI_COMMIT_SHA
 
 stages:
   - build
@@ -38,7 +37,7 @@ build:
   tags:
     - $RUNNER_TAG
   <<: *before_build_template
-  script: docker buildx build --platform=$DARCH --target prod -t $REGISTRY/$IMAGE_NAME:$ARCH-latest --push .
+  script: docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=$DARCH --target prod -t $REGISTRY/$IMAGE_NAME:$ARCH-latest --push .
 
 create-manifest:
   stage: manifest
