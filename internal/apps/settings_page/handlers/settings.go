@@ -105,7 +105,7 @@ func (mah *SettingsPageHandler) SetSchedulePost(c echo.Context) error {
 	locationStr := c.FormValue("timezone")
 	loc, err := time.LoadLocation(locationStr)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone: "+locationStr)
 	}
 
 	schedule := models.NewSchedule(pillDispenser)
@@ -158,7 +158,7 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 	locationStr := c.FormValue("timezone")
 	loc, err := time.LoadLocation(locationStr)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid timezone: "+locationStr)
 	}
 
 	schedule := models.NewSchedule(pillDispenser)
