@@ -25,6 +25,8 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 
 FROM alpine AS prod
 WORKDIR /src
+COPY --from=build-prod /usr/local/go/lib/time/zoneinfo.zip /
+ENV ZONEINFO=/zoneinfo.zip
 COPY --from=build-prod /bin/server /bin/manage /go/bin/goose /bin/
 COPY . .
 EXPOSE 80
