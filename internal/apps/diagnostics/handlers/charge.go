@@ -2,16 +2,60 @@
 package handlers
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/diagnostics/views"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 )
 
-func (psnah *ProvideDiagnosticsHandler) Get(c echo.Context) error {
-	values := []float64{3.15, 3.28, 3.42, 3.55, 3.67, 3.79, 3.91, 4.05, 4.12, 3.98}
-	timeMarkers := []string{
-		"08:00", "09:00", "10:00", "11:00", "12:00",
-		"13:00", "14:00", "15:00", "16:00", "17:00",
+func (diagn *ProvideDiagnosticsHandler) Get(c echo.Context) error {
+	statuses, err := diagn.DB.BatteryStatuses().GetAll()
+	if err != nil {
+		return err
 	}
-	return util.TemplRender(c, views.ChargePage(values, timeMarkers, ""))
+
+	// Prepare slices expected by the template
+	var voltageData [][]float64
+	var timeLabels [][]string
+	var seriesNames []string
+
+	if len(statuses) == 0 {
+		return util.TemplRender(c, views.ChargePage(voltageData, timeLabels, seriesNames, ""))
+	}
+
+	// statuses ordered by serial_nu, created_at ASC by GetAll
+	currSerial := statuses[0].SerialNumber
+	var currVoltages []float64
+	var currTimes []string
+	var currIDs []string
+
+	for _, s := range statuses {
+		if s.SerialNumber != currSerial {
+			// flush current series
+			voltageData = append(voltageData, currVoltages)
+			timeLabels = append(timeLabels, currTimes)
+			seriesNames = append(seriesNames, fmt.Sprintf("%s (ids: %s)", currSerial, strings.Join(currIDs, ",")))
+
+			// reset for next series
+			currSerial = s.SerialNumber
+			currVoltages = nil
+			currTimes = nil
+			currIDs = nil
+		}
+
+		currVoltages = append(currVoltages, float64(s.Voltage))
+		currTimes = append(currTimes, s.CreatedAt.Format("2006-01-02 15:04:05"))
+		currIDs = append(currIDs, fmt.Sprintf("%d", s.ID))
+	}
+
+	// flush last series
+	if len(currVoltages) > 0 || len(currTimes) > 0 {
+		voltageData = append(voltageData, currVoltages)
+		timeLabels = append(timeLabels, currTimes)
+		seriesNames = append(seriesNames, fmt.Sprintf("%s (ids: %s)", currSerial, strings.Join(currIDs, ",")))
+	}
+
+	return util.TemplRender(c, views.ChargePage(voltageData, timeLabels, seriesNames, ""))
 }

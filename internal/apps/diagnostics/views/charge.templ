@@ -1,16 +1,30 @@
 package views
 
-import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
+import (
+	"fmt"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
+)
 
-templ ChargePage(voltageData []float64, timeLabels []string, errString string) {
+templ ChargePage(voltageData [][]float64, timeLabels [][]string, seriesNames []string, errString string) {
 	@bviews.Base("График заряда батареи") {
 		<h3>График заряда батареи</h3>
 
-		<div class="card bg">
-			<div class="card-body">
-				<canvas id="chargeChart" height="200"></canvas>
+		// Render one full-featured card+canvas per series (title, controls, last value, canvas)
+		for i, name := range seriesNames {
+			<div class="card bg">
+				<div class="card-body">
+					<div style="display:flex;justify-content:space-between;align-items:center;">
+						<h4 style="margin:0 8px 8px 0;">{ name }</h4>
+						<div>
+							<button class="btn btn-sm btn-outline-primary" data-action="download" data-idx={ fmt.Sprintf("%d", i) }>CSV</button>
+							<button class="btn btn-sm btn-outline-secondary" data-action="toggle-fill" data-idx={ fmt.Sprintf("%d", i) }>Заполнение</button>
+						</div>
+					</div>
+					<div class="small text-muted" style="margin-bottom:8px;">Последнее: <span id={"last-" + fmt.Sprintf("%d", i)}>—</span></div>
+					<canvas id={"chargeChart-" + fmt.Sprintf("%d", i)} class="chart-canvas" height="400"></canvas>
+				</div>
 			</div>
-		</div>
+		}
 
 		// Error block — rendered only if errString is non-empty
 		if errString != "" {
@@ -21,50 +35,207 @@ templ ChargePage(voltageData []float64, timeLabels []string, errString string) {
 			</div>
 		}
 
-		// Hidden server-rendered lists (template loops run in HTML context)
-		<ul id="timeLabels" style="display:none;">
-			for _, t := range timeLabels {
-				<li>{ t }</li>
+		// Hidden server-rendered lists for series names (unchanged)
+		<ul id="seriesNames" style="display:none;">
+			for _, n := range seriesNames {
+				<li>{ n }</li>
 			}
 		</ul>
 
-		<ul id="voltageData" style="display:none;">
-			for _, v := range voltageData {
-				<li>{ v }</li>
-			}
-		</ul>
+		// Hidden server-rendered lists for multiple time series and voltage series
+		// Render with indices to guarantee alignment
+		for i, tarr := range timeLabels {
+			<ul class="timeLabels" data-idx={ fmt.Sprintf("%d", i) } style="display:none;">
+				for _, t := range tarr {
+					<li>{ t }</li>
+				}
+			</ul>
+		}
+
+		for i, varr := range voltageData {
+			<ul class="voltageData" data-idx={ fmt.Sprintf("%d", i) } style="display:none;">
+				for _, v := range varr {
+					<li>{ v }</li>
+				}
+			</ul>
+		}
 
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 		<script>
-			// Build JS arrays from hidden DOM lists (no server-side 'for' in JS)
-			const timeLabels = Array.from(document.querySelectorAll('#timeLabels li')).map(li => li.textContent);
-			const voltageData = Array.from(document.querySelectorAll('#voltageData li')).map(li => parseFloat(li.textContent));
-
-			const ctx = document.getElementById('chargeChart').getContext('2d');
-			const data = {
-				labels: timeLabels,
-				datasets: [{
-					label: 'Заряд батареи (мВ)',
-					data: voltageData,
-					borderColor: '#4caf50',
-					backgroundColor: 'rgba(76, 175, 80, 0.1)',
-					fill: true,
-					tension: 0.3,
-					pointRadius: 2
-				}]
-			};
-			const config = {
-				type: 'line',
-				data: data,
-				options: {
-					scales: {
-						y: { title: { display: true, text: 'мВ' } },
-						x: { title: { display: true, text: 'Время' } }
-					},
-					plugins: { legend: { display: false } }
+			// Helper: parse time string -> epoch ms (robust)
+			function toEpoch(s){
+				const d = new Date(s);
+				if(!isNaN(d)) return d.getTime();
+				const m = String(s).trim().match(/^(\d{2}|\d{4})[-\/](\d{2})[-\/](\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);
+				if(m){
+					let year = parseInt(m[1],10);
+					if(year < 100) year += 2000;
+					return Date.UTC(year, parseInt(m[2],10)-1, parseInt(m[3],10), parseInt(m[4],10), parseInt(m[5],10), parseInt(m[6],10));
 				}
-			};
-			new Chart(ctx, config);
+				return NaN;
+			}
+
+			// Format epoch ms into "YY-MM-DD HH:MM:SS" (UTC)
+			function fmtYYMMDD(epoch){
+				const d = new Date(Number(epoch));
+				const yy = String(d.getUTCFullYear()).slice(-2);
+				const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+				const dd = String(d.getUTCDate()).padStart(2,'0');
+				const hh = String(d.getUTCHours()).padStart(2,'0');
+				const min = String(d.getUTCMinutes()).padStart(2,'0');
+				const ss = String(d.getUTCSeconds()).padStart(2,'0');
+				return `${yy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+			}
+
+			// Read series names (preserve order)
+			const seriesNames = Array.from(document.querySelectorAll('#seriesNames li')).map(li => li.textContent);
+
+			// Build arrays of time lists and voltage lists indexed by series order
+			const timeLists = Array.from(document.querySelectorAll(".timeLabels"))
+				.map(ul => Array.from(ul.querySelectorAll('li')).map(li => toEpoch(li.textContent)));
+
+			const voltageLists = Array.from(document.querySelectorAll(".voltageData"))
+				.map(ul => Array.from(ul.querySelectorAll('li')).map(li => {
+					const v = parseFloat(li.textContent);
+					return isNaN(v) ? null : v;
+				}));
+
+			// Simple palette reused per-chart
+			const palette = ['#4caf50','#2196f3','#ff9800','#9c27b0','#f44336','#00bcd4','#8bc34a','#ffc107'];
+
+			// Hold chart instances by index
+			const charts = [];
+
+			// For each series, build sorted pairs (epoch, value), ensure strict chronological order, then draw chart
+			for(let idx = 0; idx < seriesNames.length; idx++){
+				const times = timeLists[idx] || [];
+				const vals = voltageLists[idx] || [];
+
+				// Pair and filter invalid entries
+				const pairs = [];
+				for(let j=0;j<Math.max(times.length, vals.length); j++){
+					const t = times[j];
+					const v = vals[j];
+					if(typeof t !== 'number' || isNaN(t)) continue;
+					pairs.push({t: t, v: (v === undefined ? null : v)});
+				}
+
+				// Sort strictly by time ascending
+				pairs.sort((a,b) => a.t - b.t);
+
+				// Build labels and data arrays
+				const labels = pairs.map(p => fmtYYMMDD(p.t));
+				const data = pairs.map(p => p.v);
+
+				// Chart config for this series
+				const color = palette[idx % palette.length];
+				const bgColor = `rgba(${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)},0.08)`;
+
+				const canvas = document.getElementById('chargeChart-' + idx);
+				// If canvas not present, skip
+				if(!canvas) continue;
+
+				const chartData = {
+					labels: labels,
+					datasets: [{
+						label: seriesNames[idx] || ('Series ' + (idx+1)),
+						data: data,
+						borderColor: color,
+						backgroundColor: bgColor,
+						fill: false,
+						tension: 0.3,
+						pointRadius: 2,
+						spanGaps: true
+					}]
+				};
+				const config = {
+					type: 'line',
+					data: chartData,
+					options: {
+						// static size: Chart won't resize the canvas automatically
+						responsive: false,
+						scales: {
+							y: { title: { display: true, text: 'мВ' } },
+							x: { title: { display: true, text: 'Время' } }
+						},
+						plugins: { legend: { display: false } },
+						interaction: { mode: 'index', intersect: false },
+					}
+				};
+				const ctx = canvas.getContext('2d');
+				// destroy previous chart instance if exists to avoid overlays
+				if(charts[idx] && typeof charts[idx].destroy === 'function'){
+					try { charts[idx].destroy(); } catch(e){ /* ignore */ }
+				}
+				const chart = new Chart(ctx, config);
+				charts[idx] = chart;
+
+				// Update last known value display
+				(function(i, pairsLocal){
+					const el = document.getElementById('last-' + i);
+					if(!el) return;
+					// find last non-null value from end
+					for(let k = pairsLocal.length - 1; k >= 0; k--){
+						if(pairsLocal[k].v !== null && pairsLocal[k].v !== undefined){
+							el.textContent = fmtYYMMDD(pairsLocal[k].t) + ' — ' + pairsLocal[k].v;
+							return;
+						}
+					}
+					el.textContent = '—';
+				})(idx, pairs);
+			}
+
+			// CSV export for a series index
+			function downloadCSV(idx){
+				const chart = charts[idx];
+				if(!chart) return;
+				const labels = chart.data.labels || [];
+				const data = (chart.data.datasets[0] && chart.data.datasets[0].data) || [];
+				let csv = 'time;value\n';
+				for(let i=0;i<labels.length;i++){
+					const v = (data[i] === null || data[i] === undefined) ? '' : data[i];
+					csv += `${labels[i]};${v}\n`;
+				}
+				const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = (seriesNames[idx] || ('series-' + idx)) + '.csv';
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			}
+
+			// Toggle points visibility
+			function togglePoints(idx){
+				const chart = charts[idx];
+				if(!chart) return;
+				const ds = chart.data.datasets[0];
+				ds.pointRadius = (ds.pointRadius && ds.pointRadius > 0) ? 0 : 2;
+				chart.update();
+			}
+
+			// Toggle fill under line
+			function toggleFill(idx){
+				const chart = charts[idx];
+				if(!chart) return;
+				const ds = chart.data.datasets[0];
+				ds.fill = !ds.fill;
+				chart.update();
+			}
+
+			// Attach button handlers (delegated)
+			Array.from(document.querySelectorAll('button[data-action]')).forEach(btn => {
+				btn.addEventListener('click', function(){
+					const action = this.getAttribute('data-action');
+					const idx = parseInt(this.getAttribute('data-idx'), 10);
+					if(isNaN(idx)) return;
+					if(action === 'download') downloadCSV(idx);
+					if(action === 'toggle-points') togglePoints(idx);
+					if(action === 'toggle-fill') toggleFill(idx);
+				});
+			});
 		</script>
 
 		@Styles()
@@ -76,6 +247,12 @@ templ Styles() {
 		.card.bg {
 			background-color: #f5f5f5;
 			margin-bottom: 20px;
+		}
+		.chart-canvas {
+			display: block;
+		}
+		.card.bg .card-body {
+			padding: 15px;
 		}
 	</style>
 }
