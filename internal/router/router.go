@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	confirmlayout "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/confirm_layout"
+	diagnosticspage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/diagnostics"
 	mainpage "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/main_page"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsengeragent"
 	pilldispenser "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/pill_dispenser"
@@ -54,6 +55,7 @@ func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
 	settingspage.ConfigureSettingsPageGroup(e.Group("/medsenger/settings"), deps)
 	providesnactionpage.ConfigureProvideSNActionGroup(e.Group("/provide-sn"), deps)
 	confirmlayout.ConfigureConfirmLayoutPageGroup(e.Group("/confirm-layout"), deps)
+	diagnosticspage.ConfigureDiagnosticsGroup(e.Group("/diagnostics"), deps)
 }
 
 func Start(e *echo.Echo, cfg *config.Config) error {
