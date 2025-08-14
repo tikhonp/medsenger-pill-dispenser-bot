@@ -1,0 +1,81 @@
+package views
+
+import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
+
+templ ChargePage(voltageData []float64, timeLabels []string, errString string) {
+	@bviews.Base("График заряда батареи") {
+		<h3>График заряда батареи</h3>
+
+		<div class="card bg">
+			<div class="card-body">
+				<canvas id="chargeChart" height="200"></canvas>
+			</div>
+		</div>
+
+		// Error block — rendered only if errString is non-empty
+		if errString != "" {
+			<div class="card bg">
+				<div class="card-body">
+					<span>ОШИБКА: { errString }</span>
+				</div>
+			</div>
+		}
+
+		// Hidden server-rendered lists (template loops run in HTML context)
+		<ul id="timeLabels" style="display:none;">
+			for _, t := range timeLabels {
+				<li>{ t }</li>
+			}
+		</ul>
+
+		<ul id="voltageData" style="display:none;">
+			for _, v := range voltageData {
+				<li>{ v }</li>
+			}
+		</ul>
+
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<script>
+			// Build JS arrays from hidden DOM lists (no server-side 'for' in JS)
+			const timeLabels = Array.from(document.querySelectorAll('#timeLabels li')).map(li => li.textContent);
+			const voltageData = Array.from(document.querySelectorAll('#voltageData li')).map(li => parseFloat(li.textContent));
+
+			const ctx = document.getElementById('chargeChart').getContext('2d');
+			const data = {
+				labels: timeLabels,
+				datasets: [{
+					label: 'Заряд батареи (мВ)',
+					data: voltageData,
+					borderColor: '#4caf50',
+					backgroundColor: 'rgba(76, 175, 80, 0.1)',
+					fill: true,
+					tension: 0.3,
+					pointRadius: 2
+				}]
+			};
+			const config = {
+				type: 'line',
+				data: data,
+				options: {
+					scales: {
+						y: { title: { display: true, text: 'мВ' } },
+						x: { title: { display: true, text: 'Время' } }
+					},
+					plugins: { legend: { display: false } }
+				}
+			};
+			new Chart(ctx, config);
+		</script>
+
+		@Styles()
+	}
+}
+
+templ Styles() {
+	<style>
+		.card.bg {
+			background-color: #f5f5f5;
+			margin-bottom: 20px;
+		}
+	</style>
+}
