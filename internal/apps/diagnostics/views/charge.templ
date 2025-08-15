@@ -153,7 +153,7 @@ templ ChargePage(voltageData [][]float64, timeLabels [][]string, seriesNames []s
 					data: chartData,
 					options: {
 						// static size: Chart won't resize the canvas automatically
-						responsive: false,
+						responsive: true,
 						scales: {
 							y: { title: { display: true, text: 'мВ' } },
 							x: { title: { display: true, text: 'Время' } }
