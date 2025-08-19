@@ -15,6 +15,11 @@ CMD ["air", "-c", ".air.toml"]
 FROM --platform=$BUILDPLATFORM golang:${GOVERSION}-alpine AS build-prod
 ARG TARGETOS
 ARG TARGETARCH
+WORKDIR /src
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,target=. \
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
+    go build -tags='no_clickhouse no_libsql no_mssql no_mysql no_sqlite3 no_vertica no_ydb' -o /bin/goose github.com/pressly/goose/v3/cmd/goose
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /bin/manage ./cmd/manage/
@@ -26,10 +31,7 @@ FROM alpine AS prod
 WORKDIR /src
 COPY --from=build-prod /usr/local/go/lib/time/zoneinfo.zip /
 ENV ZONEINFO=/zoneinfo.zip
-ARG TARGETOS
-ARG TARGETARCH
-ADD --chmod=111 "https://github.com/pressly/goose/releases/latest/download/goose_${TARGETOS}_${TARGETARCH}" /bin/goose
-COPY --from=build-prod /bin/server /bin/manage /bin/
+COPY --from=build-prod /bin/server /bin/manage /bin/goose /bin/
 COPY . .
 EXPOSE 80
 ENV DEBUG=false
