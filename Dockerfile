@@ -12,22 +12,24 @@ RUN go mod download && go mod verify
 CMD ["air", "-c", ".air.toml"]
 
 
-FROM golang:${GOVERSION}-alpine AS build-prod
-RUN CGO_ENABLED=0 GOARCH=$TARGETARCH \
-    go install -tags='no_clickhouse no_libsql no_mssql no_mysql no_sqlite3 no_vertica no_ydb' github.com/pressly/goose/v3/cmd/goose@latest
-WORKDIR /src
+FROM --platform=$BUILDPLATFORM golang:${GOVERSION}-alpine AS build-prod
+ARG TARGETOS
+ARG TARGETARCH
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/manage ./cmd/manage/
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /bin/manage ./cmd/manage/
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/server ./cmd/server/
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /bin/server ./cmd/server/
 
 FROM alpine AS prod
 WORKDIR /src
 COPY --from=build-prod /usr/local/go/lib/time/zoneinfo.zip /
 ENV ZONEINFO=/zoneinfo.zip
-COPY --from=build-prod /bin/server /bin/manage /go/bin/goose /bin/
+ARG TARGETOS
+ARG TARGETARCH
+ADD --chmod=111 "https://github.com/pressly/goose/releases/latest/download/goose_${TARGETOS}_${TARGETARCH}" /bin/goose
+COPY --from=build-prod /bin/server /bin/manage /bin/
 COPY . .
 EXPOSE 80
 ENV DEBUG=false
