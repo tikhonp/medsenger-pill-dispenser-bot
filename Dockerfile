@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GOVERSION=1.24.6
+ARG GOVERSION=1.25.0
 
 FROM golang:${GOVERSION}-alpine AS dev
 RUN go install "github.com/air-verse/air@latest" && \

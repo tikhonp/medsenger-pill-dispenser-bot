@@ -1,3 +1,4 @@
+// Package diagnosticspage configures the routes for the diagnostics page.
 package diagnosticspage
 
 import (

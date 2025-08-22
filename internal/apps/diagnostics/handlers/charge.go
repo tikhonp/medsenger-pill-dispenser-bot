@@ -2,9 +2,6 @@
 package handlers
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/diagnostics/views"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
@@ -29,33 +26,34 @@ func (diagn *ProvideDiagnosticsHandler) Get(c echo.Context) error {
 	currSerial := statuses[0].SerialNumber
 	var currVoltages []float64
 	var currTimes []string
-	var currIDs []string
+	// var currIDs []string
 
 	for _, s := range statuses {
 		if s.SerialNumber != currSerial {
 			// flush current series
 			voltageData = append(voltageData, currVoltages)
 			timeLabels = append(timeLabels, currTimes)
-			seriesNames = append(seriesNames, fmt.Sprintf("%s (ids: %s)", currSerial, strings.Join(currIDs, ",")))
+			seriesNames = append(seriesNames, currSerial)
 
 			// reset for next series
 			currSerial = s.SerialNumber
 			currVoltages = nil
 			currTimes = nil
-			currIDs = nil
+			// currIDs = nil
 		}
 
 		currVoltages = append(currVoltages, float64(s.Voltage))
 		currTimes = append(currTimes, s.CreatedAt.Format("2006-01-02 15:04:05"))
-		currIDs = append(currIDs, fmt.Sprintf("%d", s.ID))
+		// currIDs = append(currIDs, fmt.Sprintf("%d", s.ID))
 	}
 
 	// flush last series
 	if len(currVoltages) > 0 || len(currTimes) > 0 {
 		voltageData = append(voltageData, currVoltages)
 		timeLabels = append(timeLabels, currTimes)
-		seriesNames = append(seriesNames, fmt.Sprintf("%s (ids: %s)", currSerial, strings.Join(currIDs, ",")))
+		seriesNames = append(seriesNames, currSerial)
 	}
 
 	return util.TemplRender(c, views.ChargePage(voltageData, timeLabels, seriesNames, ""))
 }
+
