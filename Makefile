@@ -10,7 +10,7 @@ run: dev
 dev:
 	${ENVS} docker compose -f compose.yaml up
 
-build-dev:
+build-dev: fdev
 	${ENVS} docker compose -f compose.yaml up --build
 
 fdev:

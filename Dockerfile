@@ -6,7 +6,7 @@ ARG NODE_VERSION=24
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS frontend-builder
 WORKDIR /app
-ARG VITE_AGENT_URL
+ARG VITE_AGENT_URL="https://pills.ai.medsenger.ru"
 ENV VITE_AGENT_URL=${VITE_AGENT_URL}
 COPY frontend/package.json ./
 RUN --mount=type=cache,target=/root/.npm npm install
@@ -25,7 +25,7 @@ RUN go mod download && go mod verify
 CMD ["air", "-c", ".air.toml"]
 
 
-FROM --platform=$BUILDPLATFORM golang:${GOVERSION}-alpine AS build-prod
+FROM --platform=$BUILDPLATFORM golang:${GOVERSION}-alpine AS prod-builder
 ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /src
@@ -41,10 +41,11 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /bin/server ./cmd/server/
 
 FROM alpine AS prod
+COPY --from=frontend-builder /app/dist /public/frontend
 WORKDIR /src
-COPY --from=build-prod /usr/local/go/lib/time/zoneinfo.zip /
+COPY --from=prod-builder /usr/local/go/lib/time/zoneinfo.zip /
 ENV ZONEINFO=/zoneinfo.zip
-COPY --from=build-prod /bin/server /bin/manage /bin/goose /bin/
+COPY --from=prod-builder /bin/server /bin/manage /bin/goose /bin/
 COPY --exclude=frontend/ . .
 EXPOSE 80
 ENV DEBUG=false

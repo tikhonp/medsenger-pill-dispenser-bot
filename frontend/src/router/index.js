@@ -7,17 +7,17 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
+      path: '/confirm-layout',
       name: 'home',
       component: HomeView,
     },
     {
-      path: '/fill-2x2-dispenser',
+      path: '/confirm-layout/fill-2x2-dispenser',
       name: '2x2',
       component: Fill2x2DispenserView,
     },
     {
-      path: '/fill-4x7-dispenser',
+      path: '/confirm-layout/fill-4x7-dispenser',
       name: '4x7',
       component: Fill4x7DispenserView,
     },

@@ -7,8 +7,8 @@ import { RouterLink, RouterView } from 'vue-router'
   <div class='chooser-page'>
     <div class='dispenser-chooser shadow p-4 rounded'>
       <h5 class='mb-3 text-primary fw-bold text-center'>Выберите размер таблетницы...</h5>
-      <router-link class='btn btn-info btn-block' to='/fill-2x2-dispenser'>2 x 2</router-link>
-      <router-link class='btn btn-info btn-block ' to='/fill-4x7-dispenser'>4 x 7</router-link>
+      <router-link class='btn btn-info btn-block' to='/confirm-layout/fill-2x2-dispenser'>2 x 2</router-link>
+      <router-link class='btn btn-info btn-block ' to='/confirm-layout/fill-4x7-dispenser'>4 x 7</router-link>
     </div>
   </div>
 
