@@ -18,6 +18,10 @@ type BatteryStatus struct {
 type BatteryStatuses interface {
 	// InsertBatteryStatus inserts a new battery status record into the database
 	InsertBatteryStatus(status BatteryStatus) (*BatteryStatus, error)
+	
+	// GetAll retrieves all battery status records from the database
+	// Returns a slice of BatteryStatus and an error
+	GetAll() ([]BatteryStatus, error)
 }
 
 type batteryStatus struct {
@@ -45,3 +49,11 @@ func (b *batteryStatus) InsertBatteryStatus(status BatteryStatus) (*BatteryStatu
 	return &status, nil
 }
 
+func (b *batteryStatus) GetAll() ([]BatteryStatus, error) {
+	query := `SELECT * FROM battery_status ORDER BY serial_nu, created_at ASC`
+	var statuses []BatteryStatus
+	if err := b.db.Select(&statuses, query); err != nil {
+		return nil, err
+	}
+	return statuses, nil
+}

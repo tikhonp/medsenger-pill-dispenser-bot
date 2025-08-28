@@ -51,3 +51,6 @@ add-pill-dispenser:
 
 build-prod-image:
 	docker buildx build --build-arg SOURCE_COMMIT="${SOURCE_COMMIT_SHA}" --target prod -t docker.telepat.online/agents-pilldispenser-image:latest .
+
+update-deps:
+	docker exec -it --tty pill-dispenser-agent go get -u ./...
