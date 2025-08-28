@@ -49,6 +49,7 @@ func New(cfg *config.Config) *echo.Echo {
 }
 
 func RegisterRoutes(e *echo.Echo, deps util.Dependencies) {
+	e.Static("", "/public/frontend")
 	mainpage.ConfigureMainPageGroup(e.Group(""), deps)
 	pilldispenser.ConfigurePillDispenserGroup(e.Group("/pill-dispenser"), deps)
 	medsengeragent.ConfigureMedsengerAgentGroup(e.Group("/medsenger"), deps)

@@ -24,7 +24,8 @@ export default defineConfig({
       }
     },
     hmr: true
+  },
+  define: {
+    VITE_AGENT_URL: JSON.stringify(process.env.VITE_AGENT_URL),
   }
 })
-
-

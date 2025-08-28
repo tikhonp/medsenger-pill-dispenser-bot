@@ -4,6 +4,8 @@ services:
     build:
       context: .
       target: dev
+      args:
+        - VITE_AGENT_URL=${VITE_AGENT_URL}
     ports:
       - "3054:3054"
     depends_on:
