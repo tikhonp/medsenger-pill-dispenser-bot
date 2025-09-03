@@ -47,7 +47,7 @@ func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractID int, ctx ec
 		return
 	}
 
-	err = mah.DB.Contracts().UpdateContractWithPatientData(contractID, ci.PatientName, ci.PatientEmail)
+	err = mah.DB.Contracts().UpdateContractWithPatientData(contractID, ci.PatientName, ci.PatientEmail, ci.ClinicTimezone)
 	if err != nil {
 		// sentry.CaptureException(err)
 		ctx.Logger().Error(err)

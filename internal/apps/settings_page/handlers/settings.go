@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -93,7 +94,12 @@ func (mah *SettingsPageHandler) SetScheduleGet(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return util.TemplRender(c, views.ScheduleSettings(pillDispenser, schedules, contract))
+	println(contract.Timezone.String)
+	loc, err := time.LoadLocation(contract.Timezone.String)
+	if err != nil {
+		return err
+	}
+	return util.TemplRender(c, views.ScheduleSettings(pillDispenser, schedules, contract, loc))
 }
 
 func (mah *SettingsPageHandler) SetSchedulePost(c echo.Context) error {
@@ -135,8 +141,8 @@ func (mah *SettingsPageHandler) SetSchedulePost(c echo.Context) error {
 		contentsDescription := c.FormValue("cell-contents-description-" + strconv.Itoa(i))
 		schedule.Cells[i] = models.ScheduleCell{
 			Index:               i,
-			StartTime:           sql.NullTime{Valid: true, Time: cellStartTime},
-			EndTime:             sql.NullTime{Valid: true, Time: cellEndTime},
+			StartTime:           sql.NullTime{Valid: true, Time: cellStartTime.UTC()},
+			EndTime:             sql.NullTime{Valid: true, Time: cellEndTime.UTC()},
 			ContentsDescription: sql.NullString{Valid: true, String: contentsDescription},
 		}
 	}
@@ -146,7 +152,7 @@ func (mah *SettingsPageHandler) SetSchedulePost(c echo.Context) error {
 		return err
 	}
 
-	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false))
+	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false, loc))
 }
 
 func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
@@ -189,6 +195,7 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 		}
 		cellEndTimeStr := c.FormValue("cell-end-time-" + strconv.Itoa(i))
 		cellEndTime, err := time.ParseInLocation(util.HTMLInputTime, cellEndTimeStr, loc)
+		fmt.Println("cellEndTimeStr", cellEndTimeStr, "cellEndTime", cellEndTime)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
 		}
@@ -196,8 +203,8 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 		schedule.Cells[i] = models.ScheduleCell{
 			Index:               i,
 			ScheduleID:          scheduleID,
-			StartTime:           sql.NullTime{Valid: true, Time: cellStartTime},
-			EndTime:             sql.NullTime{Valid: true, Time: cellEndTime},
+			StartTime:           sql.NullTime{Valid: true, Time: cellStartTime.UTC()},
+			EndTime:             sql.NullTime{Valid: true, Time: cellEndTime.UTC()},
 			ContentsDescription: sql.NullString{Valid: true, String: contentsDescription},
 		}
 	}
@@ -207,7 +214,7 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 		return err
 	}
 
-	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false))
+	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false, loc))
 }
 
 func (mah *SettingsPageHandler) GetNewScheduleForm(c echo.Context) error {
@@ -216,5 +223,9 @@ func (mah *SettingsPageHandler) GetNewScheduleForm(c echo.Context) error {
 		return err
 	}
 	schedule := models.NewSchedule(pillDispenser)
-	return util.TemplRender(c, views.Schedule(schedule, pillDispenser, contract, true))
+	loc, err := time.LoadLocation(contract.Timezone.String)
+	if err != nil {
+		return err
+	}
+	return util.TemplRender(c, views.Schedule(schedule, pillDispenser, contract, true, loc))
 }

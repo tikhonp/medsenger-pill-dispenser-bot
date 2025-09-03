@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models.Contract, isNew bool) templ.Component {
+func Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models.Contract, isNew bool, loc *time.Location) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -246,9 +246,9 @@ func Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
-			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(cell.StartTime.Time.Format(util.HTMLInputTime))
+			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(cell.StartTime.Time.In(loc).Format(util.HTMLInputTime))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/settings_page/views/schedule_settings.templ`, Line: 66, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/settings_page/views/schedule_settings.templ`, Line: 66, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -298,9 +298,9 @@ func Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(cell.EndTime.Time.Format(util.HTMLInputTime))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(cell.EndTime.Time.In(loc).Format(util.HTMLInputTime))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/settings_page/views/schedule_settings.templ`, Line: 74, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/settings_page/views/schedule_settings.templ`, Line: 74, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -386,7 +386,7 @@ func Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models
 	})
 }
 
-func ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData, contract *models.Contract) templ.Component {
+func ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData, contract *models.Contract, loc *time.Location) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -450,7 +450,7 @@ func ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData,
 				return templ_7745c5c3_Err
 			}
 			for _, schdl := range schedules {
-				templ_7745c5c3_Err = Schedule(&schdl, pd, contract, false).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = Schedule(&schdl, pd, contract, false, loc).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

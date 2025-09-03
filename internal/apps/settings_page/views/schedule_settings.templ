@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models.Contract, isNew bool) {
+templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *models.Contract, isNew bool, loc *time.Location) {
 	<div id={ "schedule-form-" + strconv.Itoa(s.Schedule.ID) }>
 		<details
 			if isNew {
@@ -63,7 +63,7 @@ templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *model
 							type="datetime-local"
 							id={ "cell-start-time-" + strconv.Itoa(cell.Index) }
 							name={ "cell-start-time-" + strconv.Itoa(cell.Index) }
-							value={ cell.StartTime.Time.Format(util.HTMLInputTime) }
+							value={ cell.StartTime.Time.In(loc).Format(util.HTMLInputTime) } 
 						/>
 						<br/>
 						<label for={ "cell-end-time-" + strconv.Itoa(cell.Index) }>End Time</label>
@@ -71,7 +71,7 @@ templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *model
 							type="datetime-local"
 							id={ "cell-end-time-" + strconv.Itoa(cell.Index) }
 							name={ "cell-end-time-" + strconv.Itoa(cell.Index) }
-							value={ cell.EndTime.Time.Format(util.HTMLInputTime) }
+							value={ cell.EndTime.Time.In(loc).Format(util.HTMLInputTime) }
 						/>
 						<br/>
 						<label for={ "cell-contents-description-" + strconv.Itoa(cell.Index) }>Contents Description</label>
@@ -96,14 +96,14 @@ templ Schedule(s *models.ScheduleData, pd *models.PillDispenser, contract *model
 	</div>
 }
 
-templ ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData, contract *models.Contract) {
+templ ScheduleSettings(pd *models.PillDispenser, schedules []models.ScheduleData, contract *models.Contract, loc *time.Location) {
 	@bviews.Base("Настройки") {
 		<h1>Настройка таблетницы SN: { pd.SerialNumber }</h1>
 		<button type="button" hx-get={ string(templ.URL(bviews.Host + "/medsenger/settings/set-schedule/" + pd.SerialNumber + "/new-schedule-form" + "?agent_token=" + contract.AgentToken)) } hx-target="#schedules-list" hx-swap="afterbegin">Добавить расписание</button>
 		<br/>
 		<div id="schedules-list">
 			for _, schdl := range schedules {
-				@Schedule(&schdl, pd, contract, false)
+				@Schedule(&schdl, pd, contract, false, loc)
 			}
 		</div>
 	}

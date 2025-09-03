@@ -19,6 +19,7 @@ type Contract struct {
 	Locale            string         `db:"locale"`
 	PatientName       sql.NullString `db:"patient_name"`
 	PatientEmail      sql.NullString `db:"patient_email"`
+	Timezone          sql.NullString `db:"timezone"`
 }
 
 type Contracts interface {
@@ -31,7 +32,7 @@ type Contracts interface {
 	NewContract(contractID, clinicID int, agentToken, patientAgentToken, doctorAgentToken, locale string) error
 
 	// UpdateContractWithPatientData saves contract patient meta data to db
-	UpdateContractWithPatientData(contractID int, patientName, patientEmail string) error
+	UpdateContractWithPatientData(contractID int, patientName, patientEmail, timezone string) error
 
 	// MarkInactiveContractWithID sets contract with id to inactive.
 	// Use it for medsenger remove endpoint.
@@ -70,11 +71,11 @@ func (c *contracts) NewContract(contractID, clinicID int, agentToken, patientAge
 	return err
 }
 
-func (c *contracts) UpdateContractWithPatientData(contractID int, patientName, patientEmail string) error {
+func (c *contracts) UpdateContractWithPatientData(contractID int, patientName, patientEmail, timezone string) error {
 	const query = `
-        UPDATE contract SET patient_name = $1, patient_email = $2 WHERE id = $3
+        UPDATE contract SET patient_name = $1, patient_email = $2, timezone = $3 WHERE id = $4
     `
-	_, err := c.db.Exec(query, patientName, patientEmail, contractID)
+	_, err := c.db.Exec(query, patientName, patientEmail, timezone, contractID)
 	return err
 }
 

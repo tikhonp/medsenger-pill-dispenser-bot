@@ -57,6 +57,10 @@ func (s *schedule) GetSchedules(pillDispenserSN string, contractID int) ([]Sched
 		if err != nil {
 			return nil, err
 		}
+		for i := range cells {
+			cells[i].StartTime.Time = cells[i].StartTime.Time.UTC()
+			cells[i].EndTime.Time = cells[i].EndTime.Time.UTC()
+		}
 		schedulesData = append(schedulesData, ScheduleData{
 			Schedule: schedule,
 			Cells:    cells,
@@ -88,6 +92,10 @@ func (s *schedule) GetScheduleForSN(serialNumber string) (*ScheduleData, error) 
 	err = s.db.Select(&cells, query, schedule.ID)
 	if err != nil {
 		return nil, err
+	}
+	for i := range cells {
+		cells[i].StartTime.Time = cells[i].StartTime.Time.UTC()
+		cells[i].EndTime.Time = cells[i].EndTime.Time.UTC()
 	}
 	return &ScheduleData{
 		Schedule: schedule,
