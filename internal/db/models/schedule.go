@@ -197,9 +197,9 @@ func (s *schedule) GetPillNameAndContractID(serialNumber string, cellIndex int) 
 
 func (s *schedule) GetLastScheduleForContractID(contractID int) (*ScheduleData, error) {
 	var schedule Schedule
+	// JOIN pill_dispenser pd ON s.pill_dispenser_sn = pd.serial_number AND s.contract_id = pd.contract_id
 	query := `
     SELECT s.* FROM schedule s
-    JOIN pill_dispenser pd ON s.pill_dispenser_sn = pd.serial_number AND s.contract_id = pd.contract_id
     WHERE pd.contract_id = $1
     ORDER BY created_at DESC
     LIMIT 1
