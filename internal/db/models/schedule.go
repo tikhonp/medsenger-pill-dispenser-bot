@@ -200,7 +200,7 @@ func (s *schedule) GetLastScheduleForContractID(contractID int) (*ScheduleData, 
 	// JOIN pill_dispenser pd ON s.pill_dispenser_sn = pd.serial_number AND s.contract_id = pd.contract_id
 	query := `
     SELECT s.* FROM schedule s
-    WHERE pd.contract_id = $1
+    WHERE s.contract_id = $1
     ORDER BY created_at DESC
     LIMIT 1
     `
