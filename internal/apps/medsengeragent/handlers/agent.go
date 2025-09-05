@@ -2,6 +2,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"slices"
 	"strconv"
@@ -179,6 +180,7 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 
 	_, err = mah.DB.Schedules().EditSchedule(*schedule)
 	if err != nil {
+		log.Println("Error saving schedule:", err.Error())
 		return err
 	}
 

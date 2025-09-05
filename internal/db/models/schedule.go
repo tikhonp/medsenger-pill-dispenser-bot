@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -170,11 +171,14 @@ func (s *schedule) EditSchedule(schedule ScheduleData) (*ScheduleData, error) {
     WHERE idx = :idx AND schedule_id = :schedule_id
     `
 	for _, cell := range schedule.Cells {
+		log.Printf("Updating cell: %+v\n", cell)
 		_, err := tx.NamedExec(query, cell)
 		if err != nil {
+			log.Printf("Error updating cell: %s\n", err.Error())
 			_ = tx.Rollback()
 			return &schedule, err
 		}
+		log.Printf("Updated cell: %+v\n", cell)
 	}
 
 	return &schedule, tx.Commit()
