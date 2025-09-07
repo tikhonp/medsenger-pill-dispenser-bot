@@ -59,7 +59,7 @@ func (clh *ConfirmLayoutHandler) Large(c echo.Context) error {
 
 func (clh *ConfirmLayoutHandler) Small(c echo.Context) error {
 	layoutData := LayoutData{
-		HardwareType: models.HardwareType2x2,
+		HardwareType: models.HardwareType2x2V1,
 		Cells: []CellData{
 			{CellID: 1, PillName: "Пилюля 1", Time: time.Now()},
 			{CellID: 2, PillName: "Пилюля 2", Time: time.Now().Add(1 * time.Hour)},

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
@@ -40,6 +42,7 @@ type manageConfig struct {
 	configPath string
 
 	serialNumber                string
+	description                 string
 	hwType                      models.HardwareType
 	addPillDispenserInteractive bool
 }
@@ -54,6 +57,7 @@ func parseFlags() *manageConfig {
 	flag.StringVar(&cfg.configPath, "config", "config.pkl", "path to config file")
 
 	flag.StringVar(&cfg.serialNumber, "serial-number", "", "serial number of pill dispenser")
+	flag.StringVar(&cfg.description, "description", "", "description of pill dispenser")
 	flag.BoolVar(&cfg.addPillDispenserInteractive, "i", false, "prompt for data")
 	flag.Var(&cfg.hwType, "hardware-type", "pill dispenser hardware type")
 
@@ -70,6 +74,7 @@ func printDBString(cfg *config.Config) {
 
 func addPillDispenserInteractive(cfg *config.Config) {
 	var serialNumber string
+	var description string
 	var hwType models.HardwareType
 
 	fmt.Print("Serial Number: ")
@@ -80,18 +85,26 @@ func addPillDispenserInteractive(cfg *config.Config) {
 	_, err = fmt.Scanln(&hwType)
 	assert.NoErr(err)
 
-	addPillDispenser(cfg, serialNumber, hwType)
+	fmt.Print("Description: ")
+	scanner := bufio.NewScanner(os.Stdin)
+	if scanner.Scan() {
+		description = scanner.Text()
+	} else {
+		assert.NoErr(scanner.Err())
+	}
+
+	addPillDispenser(cfg, serialNumber, description, hwType)
 }
 
-func addPillDispenser(cfg *config.Config, serialNumber string, hwType models.HardwareType) {
+func addPillDispenser(cfg *config.Config, serialNumber, description string, hwType models.HardwareType) {
 	assert.C(serialNumber != "", "provide serial number")
-	assert.C(hwType == models.HardwareType2x2 || hwType == models.HardwareType4x7, "provide hardware type")
+	assert.C(hwType == models.HardwareType2x2V1 || hwType == models.HardwareType4x7 || hwType == models.HardwareType2x2V2, "provide hardware type")
 
 	modelsFactory, err := db.Connect(cfg.DB)
 	assert.NoErr(err)
 
 	assert.NoErr(
-		modelsFactory.PillDispensers().New(serialNumber, hwType),
+		modelsFactory.PillDispensers().New(serialNumber, description, hwType),
 	)
 }
 
@@ -106,7 +119,7 @@ func main() {
 		if manageConfig.addPillDispenserInteractive {
 			addPillDispenserInteractive(cfg)
 		} else {
-			addPillDispenser(cfg, manageConfig.serialNumber, manageConfig.hwType)
+			addPillDispenser(cfg, manageConfig.serialNumber, manageConfig.description, manageConfig.hwType)
 		}
 	default:
 		fmt.Println("Invalid arguments")

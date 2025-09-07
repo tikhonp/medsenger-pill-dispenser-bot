@@ -12,6 +12,7 @@ type PillDispenser struct {
 	HWType        HardwareType  `db:"hw_type_id"`
 	LastFetchTime sql.NullTime  `db:"last_fetch_time"`
 	ContractID    sql.NullInt64 `db:"contract_id"`
+	Description   string        `db:"description"`
 }
 
 var (
@@ -23,7 +24,7 @@ type PillDispensers interface {
 	Get(serialNumber string) (*PillDispenser, error)
 
 	// New creates new pill dispenser with specific serial number and hardware type.
-	New(serialNumber string, hwType HardwareType) error
+	New(serialNumber, description string, hwType HardwareType) error
 
 	// GetContractID fetches contract id for pill dispenser with specific serial number
 	GetContractID(serialNumber string) (int, error)
@@ -57,8 +58,8 @@ func (pd *pillDispensers) Get(serialNumber string) (*PillDispenser, error) {
 	return &pillDispenser, err
 }
 
-func (pd *pillDispensers) New(serialNumber string, hwType HardwareType) error {
-	_, err := pd.db.Exec("INSERT INTO pill_dispenser(serial_number, hw_type_id) VALUES ($1, $2)", serialNumber, hwType)
+func (pd *pillDispensers) New(serialNumber, description string, hwType HardwareType) error {
+	_, err := pd.db.Exec("INSERT INTO pill_dispenser(serial_number, hw_type_id, description) VALUES ($1, $2, $3)", serialNumber, hwType, description)
 	return err
 }
 

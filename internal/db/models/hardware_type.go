@@ -5,13 +5,15 @@ import "fmt"
 type HardwareType string
 
 const (
-	HardwareType2x2 HardwareType = "HW_2X2_V1"
+	HardwareType2x2V1 HardwareType = "HW_2X2_V1"
+	HardwareType2x2V2 HardwareType = "HW_2X2_V2" 
+
 	HardwareType4x7 HardwareType = "HW_4X7_V1"
 )
 
 func (ht *HardwareType) Set(value string) error {
 	switch HardwareType(value) {
-	case HardwareType2x2, HardwareType4x7:
+	case HardwareType2x2V1, HardwareType4x7, HardwareType2x2V2:
 		*ht = HardwareType(value)
 		return nil
 	default:
@@ -25,7 +27,7 @@ func (ht *HardwareType) String() string {
 
 func (ht *HardwareType) GetCellsCount() int {
 	switch *ht {
-	case HardwareType2x2:
+	case HardwareType2x2V1, HardwareType2x2V2:
 		return 4
 	case HardwareType4x7:
 		return 28
