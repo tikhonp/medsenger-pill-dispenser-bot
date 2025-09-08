@@ -36,6 +36,10 @@ func (pdh *PillDispenserHandler) GetSchedule(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "failed to insert battery status: "+err.Error())
 		}
 	}
+	err := pdh.DB.PillDispensers().UpdateLastFetchTime(serialNumber)
+	if err != nil {
+		return err
+	}
 
 	schedule, err := pdh.DB.Schedules().GetScheduleForSN(serialNumber)
 	if errors.Is(err, models.ErrNoSchedule) {

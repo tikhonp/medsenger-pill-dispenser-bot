@@ -49,5 +49,10 @@ func (pdh *PillDispenserHandler) SubmitPills(c echo.Context) error {
 		}
 	}
 
+	err = pdh.DB.PillDispensers().UpdateLastFetchTime(serialNumber)
+	if err != nil {
+		return err
+	}
+
 	return c.NoContent(http.StatusOK)
 }

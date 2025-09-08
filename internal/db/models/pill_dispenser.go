@@ -42,6 +42,9 @@ type PillDispensers interface {
 	// UnregisterByContractID clears contract id for all pill-dispensers with specific set contract id,
 	// useful for clearing up links with pill dispensers on contract deactivation.
 	UnregisterByContractID(contractID int) error
+
+	// UpdateLastFetchTime updates last fetch time to current time for pill-dispenser with specific serial number
+	UpdateLastFetchTime(serialNumber string) error
 }
 
 type pillDispensers struct {
@@ -101,5 +104,9 @@ func (pd *pillDispensers) UnregisterContractID(serialNumber string) error {
 
 func (pd *pillDispensers) UnregisterByContractID(contractID int) error {
 	_, err := pd.db.Exec("UPDATE pill_dispenser SET contract_id = NULL WHERE contract_id = $1", contractID)
+	return err
+}
+func (pd *pillDispensers) UpdateLastFetchTime(serialNumber string) error {
+	_, err := pd.db.Exec("UPDATE pill_dispenser SET last_fetch_time = NOW() WHERE serial_number = $1", serialNumber)
 	return err
 }
