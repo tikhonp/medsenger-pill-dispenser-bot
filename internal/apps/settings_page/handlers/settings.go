@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -94,7 +93,6 @@ func (mah *SettingsPageHandler) SetScheduleGet(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	println(contract.Timezone.String)
 	loc, err := time.LoadLocation(contract.Timezone.String)
 	if err != nil {
 		return err
@@ -195,7 +193,6 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 		}
 		cellEndTimeStr := c.FormValue("cell-end-time-" + strconv.Itoa(i))
 		cellEndTime, err := time.ParseInLocation(util.HTMLInputTime, cellEndTimeStr, loc)
-		fmt.Println("cellEndTimeStr", cellEndTimeStr, "cellEndTime", cellEndTime)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid cell time")
 		}
