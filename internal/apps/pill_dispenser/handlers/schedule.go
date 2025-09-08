@@ -21,7 +21,6 @@ func (pdh *PillDispenserHandler) GetSchedule(c echo.Context) error {
 	}
 
 	batteryVoltage := c.QueryParam("battery_voltage")
-	println("Battery voltage:", batteryVoltage)
 	if batteryVoltage != "" {
 		batteryVoltageInt, err := strconv.Atoi(batteryVoltage)
 		if err != nil {
