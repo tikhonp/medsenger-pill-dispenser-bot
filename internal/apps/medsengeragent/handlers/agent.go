@@ -29,14 +29,6 @@ type initModel struct {
 		Medicines  string `json:"medicines"`
 		Algorithms string `json:"algorithms"`
 		Forms      string `json:"forms"`
-		Cell1Hour  int    `json:"red_pill_hour_1"`
-		Cell1Min   int    `json:"red_pill_min_1"`
-		Cell2Hour  int    `json:"green_pill_hour_1"`
-		Cell2Min   int    `json:"green_pill_min_1"`
-		Cell3Hour  int    `json:"red_pill_hour_2"`
-		Cell3Min   int    `json:"red_pill_min_2"`
-		Cell4Hour  int    `json:"green_pill_hour_2"`
-		Cell4Min   int    `json:"green_pill_min_2"`
 	} `json:"params,omitempty"`
 }
 
@@ -122,7 +114,9 @@ func (mah *MedsengerAgentHandler) Status(c echo.Context) error {
 }
 
 type contractIDModel struct {
-	ContractID int `json:"contract_id" validate:"required"`
+	ContractID int    `json:"contract_id" validate:"required"`
+	AgentID    int    `json:"agent_id" validate:"required"`
+	AgentName  string `json:"agent_name" validate:"required"`
 }
 
 func (mah *MedsengerAgentHandler) Remove(c echo.Context) error {
@@ -167,7 +161,10 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 
 	for _, schedulePoint := range m.Params.Schedule {
 		indx := slices.IndexFunc(schedule.Cells, func(c models.ScheduleCell) bool {
-			return c.ContentsDescription.String == strconv.Itoa(schedulePoint[0])
+			return c.ContentsDescription.Valid &&
+				c.ContentsDescription.String == strconv.Itoa(schedulePoint[0]) &&
+				!c.StartTime.Valid &&
+				!c.EndTime.Valid
 		})
 		if indx != -1 {
 			schedule.Cells[indx].StartTime.Time = time.Unix(int64(schedulePoint[1]), 0)
@@ -175,6 +172,8 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 
 			schedule.Cells[indx].EndTime.Time = time.Unix(int64(60*5+schedulePoint[1]), 0)
 			schedule.Cells[indx].EndTime.Valid = true
+		} else {
+			log.Printf("Cannot find pill with id %d in schedule for contract %d", schedulePoint[0], m.ContractID)
 		}
 	}
 
