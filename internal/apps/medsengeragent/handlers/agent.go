@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -141,7 +140,10 @@ type orderModel struct {
 	ContractID int    `json:"contract_id" validate:"required"`
 	Order      string `json:"order"`
 	Params     struct {
-		Schedule [][]int `json:"schedule"`
+		Schedule []struct {
+			Name      string `json:"name" validate:"required"`
+			Timestamp int64  `json:"timestamp" validate:"required"`
+		} `json:"schedule"`
 	} `json:"params" validate:"required"`
 	SenderID int `json:"sender_id"`
 }
@@ -162,18 +164,18 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 	for _, schedulePoint := range m.Params.Schedule {
 		indx := slices.IndexFunc(schedule.Cells, func(c models.ScheduleCell) bool {
 			return c.ContentsDescription.Valid &&
-				c.ContentsDescription.String == strconv.Itoa(schedulePoint[0]) &&
+				c.ContentsDescription.String == schedulePoint.Name &&
 				!c.StartTime.Valid &&
 				!c.EndTime.Valid
 		})
 		if indx != -1 {
-			schedule.Cells[indx].StartTime.Time = time.Unix(int64(schedulePoint[1]), 0)
+			schedule.Cells[indx].StartTime.Time = time.Unix(schedulePoint.Timestamp, 0)
 			schedule.Cells[indx].StartTime.Valid = true
 
-			schedule.Cells[indx].EndTime.Time = time.Unix(int64(60*5+schedulePoint[1]), 0)
+			schedule.Cells[indx].EndTime.Time = time.Unix(schedulePoint.Timestamp+60*5, 0)
 			schedule.Cells[indx].EndTime.Valid = true
 		} else {
-			log.Printf("Cannot find pill with id %d in schedule for contract %d", schedulePoint[0], m.ContractID)
+			log.Printf("Cannot find pill with id %s in schedule for contract %d", schedulePoint.Name, m.ContractID)
 		}
 	}
 
