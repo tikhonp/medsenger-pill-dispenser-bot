@@ -47,7 +47,7 @@ func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractID int, ctx ec
 	}
 	_, err = mah.Maigo.SendMessage(
 		contractID,
-		"Пожалуйста, введите серийный номер номер, выданного Вам, устройства.",
+		"Пожалуйста, введите серийный номер выданного Вам устройства.",
 		maigo.WithAction("Ввести", "/provide-sn", maigo.Action),
 		maigo.OnlyPatient(),
 	)
