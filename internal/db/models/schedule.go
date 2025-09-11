@@ -195,7 +195,10 @@ func (s *schedule) GetPillNameAndContractID(serialNumber string, cellIndex int) 
 	var pillName string
 	var contractID int
 	err := s.db.QueryRow(query, serialNumber, cellIndex).Scan(&pillName, &contractID)
-	return pillName, contractID, fmt.Errorf("failed to get pill name and contract ID for SN %s and cell index %d: %w", serialNumber, cellIndex, err)
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to get pill name and contract ID for SN %s and cell index %d: %w", serialNumber, cellIndex, err)
+	}
+	return pillName, contractID, nil
 }
 
 func (s *schedule) GetLastScheduleForContractID(contractID int) (*ScheduleData, error) {
