@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/diagnostics/views"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
+	pilldispenserprotocol "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/pill_dispenser_protocol"
 )
 
 func (diagn *ProvideDiagnosticsHandler) Get(c echo.Context) error {
@@ -42,7 +43,7 @@ func (diagn *ProvideDiagnosticsHandler) Get(c echo.Context) error {
 			// currIDs = nil
 		}
 
-		currVoltages = append(currVoltages, float64(s.Voltage))
+		currVoltages = append(currVoltages, float64(pilldispenserprotocol.BatteryPercentageFromVoltage(s.Voltage)))
 		currTimes = append(currTimes, s.CreatedAt.Format("2006-01-02 15:04:05"))
 		// currIDs = append(currIDs, fmt.Sprintf("%d", s.ID))
 	}
@@ -56,4 +57,3 @@ func (diagn *ProvideDiagnosticsHandler) Get(c echo.Context) error {
 
 	return util.TemplRender(c, views.ChargePage(voltageData, timeLabels, seriesNames, ""))
 }
-
