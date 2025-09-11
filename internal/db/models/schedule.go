@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -194,7 +195,7 @@ func (s *schedule) GetPillNameAndContractID(serialNumber string, cellIndex int) 
 	var pillName string
 	var contractID int
 	err := s.db.QueryRow(query, serialNumber, cellIndex).Scan(&pillName, &contractID)
-	return pillName, contractID, err
+	return pillName, contractID, fmt.Errorf("failed to get pill name and contract ID for SN %s and cell index %d: %w", serialNumber, cellIndex, err)
 }
 
 func (s *schedule) GetLastScheduleForContractID(contractID int) (*ScheduleData, error) {

@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -108,5 +109,5 @@ func (pd *pillDispensers) UnregisterByContractID(contractID int) error {
 }
 func (pd *pillDispensers) UpdateLastFetchTime(serialNumber string) error {
 	_, err := pd.db.Exec("UPDATE pill_dispenser SET last_fetch_time = NOW() WHERE serial_number = $1", serialNumber)
-	return err
+	return fmt.Errorf("failed to update last fetch time for pill dispenser with SN %s: %w", serialNumber, err)
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -18,7 +19,7 @@ type BatteryStatus struct {
 type BatteryStatuses interface {
 	// InsertBatteryStatus inserts a new battery status record into the database
 	InsertBatteryStatus(status BatteryStatus) (*BatteryStatus, error)
-	
+
 	// GetAll retrieves all battery status records from the database
 	// Returns a slice of BatteryStatus and an error
 	GetAll() ([]BatteryStatus, error)
@@ -40,11 +41,11 @@ func (b *batteryStatus) InsertBatteryStatus(status BatteryStatus) (*BatteryStatu
 	          RETURNING id, serial_nu, voltage, created_at`
 	q, args, err := sqlx.Named(query, status)
 	if err != nil {
-		return &status, err
+		return &status, fmt.Errorf("failed to bind battery status insert query: %w", err)
 	}
 	q = b.db.Rebind(q)
 	if err := b.db.QueryRowx(q, args...).StructScan(&status); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to execute battery status insert query: %w", err)
 	}
 	return &status, nil
 }
@@ -57,3 +58,4 @@ func (b *batteryStatus) GetAll() ([]BatteryStatus, error) {
 	}
 	return statuses, nil
 }
+
