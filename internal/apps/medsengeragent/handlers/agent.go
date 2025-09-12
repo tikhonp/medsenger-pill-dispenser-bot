@@ -172,7 +172,8 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 			schedule.Cells[indx].StartTime.Time = time.Unix(schedulePoint.Timestamp, 0)
 			schedule.Cells[indx].StartTime.Valid = true
 
-			schedule.Cells[indx].EndTime.Time = time.Unix(schedulePoint.Timestamp+60*5, 0)
+			// + 10 minutes to allow some delay in taking medicine
+			schedule.Cells[indx].EndTime.Time = time.Unix(schedulePoint.Timestamp+(60*10), 0)
 			schedule.Cells[indx].EndTime.Valid = true
 		} else {
 			log.Printf("Cannot find pill with id %s in schedule for contract %d", schedulePoint.Name, m.ContractID)
