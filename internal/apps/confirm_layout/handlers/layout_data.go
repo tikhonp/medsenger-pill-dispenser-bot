@@ -20,7 +20,7 @@ type LayoutData struct {
 
 func (clh *ConfirmLayoutHandler) Large(c echo.Context) error {
 	layoutData := LayoutData{
-		HardwareType: models.HardwareType4x7,
+		HardwareType: models.HardwareType4x7V1,
 		// up to 28 cells for 4x7 hardware type
 		Cells: []CellData{
 			{CellID: 1, PillName: "Пилюля 1", Time: time.Now()},

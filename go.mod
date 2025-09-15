@@ -5,8 +5,8 @@ go 1.24.6
 require (
 	github.com/TikhonP/maigo v0.4.1
 	github.com/a-h/templ v0.3.943
-	github.com/getsentry/sentry-go v0.35.2
-	github.com/getsentry/sentry-go/echo v0.35.2
+	github.com/getsentry/sentry-go v0.35.3
+	github.com/getsentry/sentry-go/echo v0.35.3
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo/v4 v4.13.4

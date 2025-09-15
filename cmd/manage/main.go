@@ -98,7 +98,7 @@ func addPillDispenserInteractive(cfg *config.Config) {
 
 func addPillDispenser(cfg *config.Config, serialNumber, description string, hwType models.HardwareType) {
 	assert.C(serialNumber != "", "provide serial number")
-	assert.C(hwType == models.HardwareType2x2V1 || hwType == models.HardwareType4x7 || hwType == models.HardwareType2x2V2, "provide hardware type")
+	assert.C(hwType == models.HardwareType2x2V1 || hwType == models.HardwareType4x7V1 || hwType == models.HardwareType2x2V2 || hwType == models.HardwareType4x7V2, "provide hardware type")
 
 	modelsFactory, err := db.Connect(cfg.DB)
 	assert.NoErr(err)
