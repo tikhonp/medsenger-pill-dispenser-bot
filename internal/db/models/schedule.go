@@ -259,3 +259,15 @@ func New4X4Schedule(contractID int) *ScheduleData {
 		Cells: NewCellsSet(4, 0),
 	}
 }
+
+func New4X7Schedule(contractID int) *ScheduleData {
+	return &ScheduleData{
+		Schedule: Schedule{
+			IsOfflineNotificationsAllowed: true,
+			RefreshRateInterval:           sql.NullInt64{Valid: true, Int64: DefaultRefreshRateInterval},
+			ContractID:                    contractID,
+			PillDispenserSN:               sql.NullString{Valid: false},
+		},
+		Cells: NewCellsSet(28, 0),
+	}
+}

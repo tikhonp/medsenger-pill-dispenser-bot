@@ -59,8 +59,17 @@ func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractID int, ctx ec
 }
 
 func (mah *MedsengerAgentHandler) SaveScheduleOnInit(m *initModel, ctx echo.Context) {
-	schedule := models.New4X4Schedule(m.ContractID)
-	for idx, pillID := range strings.Split(m.Params.PillCells, ",") {
+	pillsList := strings.Split(m.Params.PillCells, ",")
+	var schedule *models.ScheduleData
+	if len(pillsList) == 4 {
+		schedule = models.New4X4Schedule(m.ContractID)
+	} else if len(pillsList) == 28 {
+		schedule = models.New4X7Schedule(m.ContractID)
+	} else {
+		ctx.Logger().Errorf("Cannot create schedule with %d pills", len(pillsList))
+		return
+	}
+	for idx, pillID := range pillsList {
 		schedule.Cells[idx].ContentsDescription.Valid = true
 		schedule.Cells[idx].ContentsDescription.String = pillID
 	}
