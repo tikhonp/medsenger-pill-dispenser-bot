@@ -2,6 +2,8 @@
 package medsengeragent
 
 import (
+	"fmt"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsengeragent/handlers"
@@ -14,8 +16,7 @@ func ConfigureMedsengerAgentGroup(g *echo.Group, deps util.Dependencies) {
 	g.Use(util.APIKeyJSON(deps.Cfg.Server))
 
 	g.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		c.Logger().Infof("Request: %s %s, Body: %s", c.Request().Method, c.Request().URL, string(reqBody))
-		c.Logger().Infof("Response: %s %s, Body: %s", c.Request().Method, c.Request().URL, string(resBody))
+		fmt.Printf("Request Body: \n%s\n", reqBody)
 	}))
 
 	g.POST("/init", mah.Init)
