@@ -28,19 +28,16 @@ func New(cfg *config.Config) *echo.Echo {
 
 	e.Pre(middleware.RemoveTrailingSlash())
 
-	if e.Debug {
-		e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-			Format: "[${time_rfc3339}] ${status} ${method} ${path} (${remote_ip}) ${latency_human}\n",
-			Output: e.Logger.Output(),
-		}))
-	} else {
+	if !e.Debug {
 		e.Use(sentryecho.New(sentryecho.Options{
 			Repanic:         true,
 			WaitForDelivery: false,
 			Timeout:         5 * time.Second,
 		}))
-		e.Use(middleware.Logger())
 	}
+	e.Use(middleware.RequestLoggerWithConfig(
+		util.GetRequestLoggerConfig(!e.Debug),
+	))
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
