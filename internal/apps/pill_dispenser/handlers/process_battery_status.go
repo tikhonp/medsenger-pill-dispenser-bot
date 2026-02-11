@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/TikhonP/maigo"
+	"github.com/tikhonp/maigo"
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 	pilldispenserprotocol "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util/pill_dispenser_protocol"

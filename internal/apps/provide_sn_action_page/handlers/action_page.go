@@ -15,7 +15,7 @@ func (psnah *ProvideSNActionHandler) Get(c echo.Context) error {
 }
 
 func (psnah *ProvideSNActionHandler) Post(c echo.Context) error {
-	contract, err := util.GetContract(c)
+	contractID, err := util.GetContractID(c)
 	if err != nil {
 		return err
 	}
@@ -23,7 +23,7 @@ func (psnah *ProvideSNActionHandler) Post(c echo.Context) error {
 	if serialNumber == "" {
 		return util.TemplRender(c, views.ActionPage("Серийный номер не может быть пустым"))
 	}
-	regContractIDErr := psnah.DB.PillDispensers().RegisterContractID(serialNumber, contract.ID)
+	regContractIDErr := psnah.DB.PillDispensers().RegisterContractID(serialNumber, contractID)
 	if errors.Is(regContractIDErr, models.ErrPillDispenserNotExists) {
 		return util.TemplRender(c, views.ActionPage("Устройство с таким серийным номером не найдено."))
 	}
@@ -34,7 +34,7 @@ func (psnah *ProvideSNActionHandler) Post(c echo.Context) error {
 		return err
 	}
 
-	schedule, err := psnah.DB.Schedules().GetLastScheduleForContractID(contract.ID)
+	schedule, err := psnah.DB.Schedules().GetLastScheduleForContractID(contractID)
 	if err != nil {
 		return err
 	}

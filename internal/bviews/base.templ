@@ -22,6 +22,6 @@ templ Base(title string) {
 	</html>
 }
 
-templ AgentToken(c *models.Contract) {
-	<input type="hidden" name="agent-token" value={ c.AgentToken }/>
+templ AgentToken(c *models.Contract, token string) {
+	<input type="hidden" name="agent-token" value={ token }/>
 }

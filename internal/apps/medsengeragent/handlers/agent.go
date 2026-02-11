@@ -8,22 +8,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TikhonP/maigo"
 	"github.com/labstack/echo/v4"
+	"github.com/tikhonp/maigo"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
+	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
 )
 
 type initModel struct {
-	ContractID        int    `json:"contract_id" validate:"required"`
-	ClinicID          int    `json:"clinic_id" validate:"required"`
-	AgentToken        string `json:"agent_token" validate:"required"`
-	PatientAgentToken string `json:"patient_agent_token" validate:"required"`
-	DoctorAgentToken  string `json:"doctor_agent_token" validate:"required"`
-	AgentID           int    `json:"agent_id" validate:"required"`
-	AgentName         string `json:"agent_name" validate:"required"`
-	Locale            string `json:"locale" validate:"required"`
-	Preset            string `json:"preset,omitempty"`
-	Params            *struct {
+	ClinicID  int    `json:"clinic_id" validate:"required"`
+	AgentName string `json:"agent_name" validate:"required"`
+	Locale    string `json:"locale" validate:"required"`
+	Preset    string `json:"preset,omitempty"`
+	Params    *struct {
 		PillCells  string `json:"pill_cells"`
 		Medicines  string `json:"medicines"`
 		Algorithms string `json:"algorithms"`
@@ -61,10 +57,15 @@ func (mah *MedsengerAgentHandler) fetchContractDataOnInit(contractID int, ctx ec
 func (mah *MedsengerAgentHandler) SaveScheduleOnInit(m *initModel, ctx echo.Context) {
 	pillsList := strings.Split(m.Params.PillCells, ",")
 	var schedule *models.ScheduleData
+	contractID, err := util.GetContractID(ctx)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return
+	}
 	if len(pillsList) == 4 {
-		schedule = models.New4X4Schedule(m.ContractID)
+		schedule = models.New4X4Schedule(contractID)
 	} else if len(pillsList) == 28 {
-		schedule = models.New4X7Schedule(m.ContractID)
+		schedule = models.New4X7Schedule(contractID)
 	} else {
 		ctx.Logger().Errorf("Cannot create schedule with %d pills", len(pillsList))
 		return
@@ -73,7 +74,7 @@ func (mah *MedsengerAgentHandler) SaveScheduleOnInit(m *initModel, ctx echo.Cont
 		schedule.Cells[idx].ContentsDescription.Valid = true
 		schedule.Cells[idx].ContentsDescription.String = pillID
 	}
-	_, err := mah.DB.Schedules().NewSchedule(*schedule)
+	_, err = mah.DB.Schedules().NewSchedule(*schedule)
 	if err != nil {
 		// sentry.CaptureException(err)
 		ctx.Logger().Error(err)
@@ -89,16 +90,19 @@ func (mah *MedsengerAgentHandler) Init(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	err := mah.DB.Contracts().NewContract(m.ContractID, m.ClinicID, m.AgentToken, m.PatientAgentToken, m.DoctorAgentToken, m.Locale)
+	contractID, err := util.GetContractID(c)
+	if err == nil {
+		return err
+	}
+	err = mah.DB.Contracts().NewContract(contractID, m.ClinicID, m.Locale)
 	if err != nil {
 		return err
 	}
-	go mah.fetchContractDataOnInit(m.ContractID, c)
+	go mah.fetchContractDataOnInit(contractID, c)
 	if m.Params != nil {
 		go mah.SaveScheduleOnInit(m, c)
 	}
 	return c.String(http.StatusCreated, "ok")
-
 }
 
 type statusResponseModel struct {
@@ -122,9 +126,8 @@ func (mah *MedsengerAgentHandler) Status(c echo.Context) error {
 }
 
 type contractIDModel struct {
-	ContractID int    `json:"contract_id" validate:"required"`
-	AgentID    int    `json:"agent_id" validate:"required"`
-	AgentName  string `json:"agent_name" validate:"required"`
+	AgentID   int    `json:"agent_id" validate:"required"`
+	AgentName string `json:"agent_name" validate:"required"`
 }
 
 func (mah *MedsengerAgentHandler) Remove(c echo.Context) error {
@@ -135,10 +138,14 @@ func (mah *MedsengerAgentHandler) Remove(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	if err := mah.DB.Contracts().MarkInactiveContractWithID(m.ContractID); err != nil {
+	contractID, err := util.GetContractID(c)
+	if err != nil {
 		return err
 	}
-	if err := mah.DB.PillDispensers().UnregisterByContractID(m.ContractID); err != nil {
+	if err := mah.DB.Contracts().MarkInactiveContractWithID(contractID); err != nil {
+		return err
+	}
+	if err := mah.DB.PillDispensers().UnregisterByContractID(contractID); err != nil {
 		return err
 	}
 	return c.String(http.StatusCreated, "ok")
@@ -146,9 +153,8 @@ func (mah *MedsengerAgentHandler) Remove(c echo.Context) error {
 }
 
 type orderModel struct {
-	ContractID int    `json:"contract_id" validate:"required"`
-	Order      string `json:"order"`
-	Params     struct {
+	Order  string `json:"order"`
+	Params struct {
 		Schedule []struct {
 			Name      string `json:"name" validate:"required"`
 			Timestamp int64  `json:"timestamp" validate:"required"`
@@ -165,7 +171,11 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	schedule, err := mah.DB.Schedules().GetLastScheduleForContractID(m.ContractID)
+	contractID, err := util.GetContractID(c)
+	if err != nil {
+		return err
+	}
+	schedule, err := mah.DB.Schedules().GetLastScheduleForContractID(contractID)
 	if err != nil {
 		return err
 	}
@@ -185,7 +195,7 @@ func (mah *MedsengerAgentHandler) Order(c echo.Context) error {
 			schedule.Cells[indx].EndTime.Time = time.Unix(schedulePoint.Timestamp+(60*10), 0)
 			schedule.Cells[indx].EndTime.Valid = true
 		} else {
-			log.Printf("Cannot find pill with id %s in schedule for contract %d", schedulePoint.Name, m.ContractID)
+			log.Printf("Cannot find pill with id %s in schedule for contract %d", schedulePoint.Name, contractID)
 		}
 	}
 

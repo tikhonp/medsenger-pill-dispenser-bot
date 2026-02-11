@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/TikhonP/maigo"
+	"github.com/tikhonp/maigo"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/router"

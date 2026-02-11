@@ -12,7 +12,7 @@ import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
 import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 import "fmt"
 
-func ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract) templ.Component {
+func ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract, token string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -51,9 +51,9 @@ func ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract) 
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 templ.SafeURL
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(fmt.Sprintf("%s/medsenger/settings/set-schedule/%s?agent_token=%s", bviews.Host, pd.SerialNumber, contract.AgentToken)))
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(fmt.Sprintf("%s/medsenger/settings/set-schedule/%s?agent_token=%s", bviews.Host, pd.SerialNumber, token)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/settings_page/views/settings.templ`, Line: 11, Col: 139}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/apps/settings_page/views/settings.templ`, Line: 11, Col: 125}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -89,7 +89,7 @@ func ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract) 
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = bviews.AgentToken(contract).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = bviews.AgentToken(contract, token).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -114,7 +114,7 @@ func ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract) 
 	})
 }
 
-func PillDispensersList(pillDispensers []models.PillDispenser, contract *models.Contract, errors string) templ.Component {
+func PillDispensersList(pillDispensers []models.PillDispenser, contract *models.Contract, errors string, token string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -158,7 +158,7 @@ func PillDispensersList(pillDispensers []models.PillDispenser, contract *models.
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = ConnectedPillDispenser(pd, contract).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = ConnectedPillDispenser(pd, contract, token).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -213,7 +213,7 @@ func PillDispensersList(pillDispensers []models.PillDispenser, contract *models.
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = bviews.AgentToken(contract).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = bviews.AgentToken(contract, token).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -225,7 +225,7 @@ func PillDispensersList(pillDispensers []models.PillDispenser, contract *models.
 	})
 }
 
-func Settings(contract *models.Contract, connectedPillDispensers []models.PillDispenser) templ.Component {
+func Settings(contract *models.Contract, connectedPillDispensers []models.PillDispenser, token string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -275,7 +275,7 @@ func Settings(contract *models.Contract, connectedPillDispensers []models.PillDi
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = PillDispensersList(connectedPillDispensers, contract, "").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = PillDispensersList(connectedPillDispensers, contract, "", token).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -14,30 +14,39 @@ import (
 )
 
 func (mah *SettingsPageHandler) SettingsGet(c echo.Context) error {
-	contract, err := util.GetContract(c)
+	contractID, err := util.GetContractID(c)
 	if err != nil {
 		return err
 	}
-	pillDispensers, err := mah.DB.PillDispensers().GetAllByContractID(contract.ID)
+	pillDispensers, err := mah.DB.PillDispensers().GetAllByContractID(contractID)
 	if err != nil {
 		return err
 	}
-
-	return util.TemplRender(c, views.Settings(contract, pillDispensers))
+	contract, err := mah.DB.Contracts().Get(contractID)
+	if err != nil {
+		return err
+	}
+	agentToken := c.Get("agent_token").(string)
+	return util.TemplRender(c, views.Settings(contract, pillDispensers, agentToken))
 }
 
 func (mah *SettingsPageHandler) AddContractPillDispenser(c echo.Context) error {
-	contract, err := util.GetContract(c)
+	contractID, err := util.GetContractID(c)
 	if err != nil {
 		return err
 	}
+	contract, err := mah.DB.Contracts().Get(contractID)
+	if err != nil {
+		return err
+	}
+	agentToken := c.Get("agent_token").(string)
 	serialNumber := c.FormValue("serial-number")
 	if serialNumber == "" {
-		pillDispensers, err := mah.DB.PillDispensers().GetAllByContractID(contract.ID)
+		pillDispensers, err := mah.DB.PillDispensers().GetAllByContractID(contractID)
 		if err != nil {
 			return err
 		}
-		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Введите серийный номер"))
+		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Введите серийный номер", agentToken))
 	}
 	regContractIDErr := mah.DB.PillDispensers().RegisterContractID(serialNumber, contract.ID)
 	pillDispensers, err := mah.DB.PillDispensers().GetAllByContractID(contract.ID)
@@ -45,15 +54,15 @@ func (mah *SettingsPageHandler) AddContractPillDispenser(c echo.Context) error {
 		return err
 	}
 	if errors.Is(regContractIDErr, models.ErrPillDispenserNotExists) {
-		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Устройство с таким серийным номером не найдено."))
+		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Устройство с таким серийным номером не найдено.", agentToken))
 	}
 	if errors.Is(regContractIDErr, models.ErrContractIDAlreadySet) {
-		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Это устройство уже привязано к другому контракту, сначала отвяжите."))
+		return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "Это устройство уже привязано к другому контракту, сначала отвяжите.", agentToken))
 	}
 	if regContractIDErr != nil {
 		return err
 	}
-	return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, ""))
+	return util.TemplRender(c, views.PillDispensersList(pillDispensers, contract, "", agentToken))
 }
 
 func (mah *SettingsPageHandler) RemoveContractPillDispenser(c echo.Context) error {
@@ -69,7 +78,7 @@ func (mah *SettingsPageHandler) RemoveContractPillDispenser(c echo.Context) erro
 }
 
 func (mah *SettingsPageHandler) pillDispenserPagesCommon(c echo.Context) (*models.Contract, *models.PillDispenser, error) {
-	contract, err := util.GetContract(c)
+	contractID, err := util.GetContractID(c)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -78,8 +87,12 @@ func (mah *SettingsPageHandler) pillDispenserPagesCommon(c echo.Context) (*model
 	if err != nil {
 		return nil, nil, echo.NewHTTPError(http.StatusNotFound)
 	}
-	if pillDispenser.ContractID.Int64 != int64(contract.ID) {
+	if pillDispenser.ContractID.Int64 != int64(contractID) {
 		return nil, nil, echo.NewHTTPError(http.StatusForbidden)
+	}
+	contract, err := mah.DB.Contracts().Get(contractID)
+	if err != nil {
+		return nil, nil, err
 	}
 	return contract, pillDispenser, nil
 }
@@ -97,7 +110,8 @@ func (mah *SettingsPageHandler) SetScheduleGet(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return util.TemplRender(c, views.ScheduleSettings(pillDispenser, schedules, contract, loc))
+	agentToken := c.Get("agent_token").(string)
+	return util.TemplRender(c, views.ScheduleSettings(pillDispenser, schedules, contract, loc, agentToken))
 }
 
 func (mah *SettingsPageHandler) SetSchedulePost(c echo.Context) error {
@@ -150,7 +164,8 @@ func (mah *SettingsPageHandler) SetSchedulePost(c echo.Context) error {
 		return err
 	}
 
-	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false, loc))
+	agentToken := c.Get("agent_token").(string)
+	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false, loc, agentToken))
 }
 
 func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
@@ -211,7 +226,8 @@ func (mah *SettingsPageHandler) EditSchedulePost(c echo.Context) error {
 		return err
 	}
 
-	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false, loc))
+	agentToken := c.Get("agent_token").(string)
+	return util.TemplRender(c, views.Schedule(newSchedule, pillDispenser, contract, false, loc, agentToken))
 }
 
 func (mah *SettingsPageHandler) GetNewScheduleForm(c echo.Context) error {
@@ -224,5 +240,7 @@ func (mah *SettingsPageHandler) GetNewScheduleForm(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return util.TemplRender(c, views.Schedule(schedule, pillDispenser, contract, true, loc))
+
+	agentToken := c.Get("agent_token").(string)
+	return util.TemplRender(c, views.Schedule(schedule, pillDispenser, contract, true, loc, agentToken))
 }

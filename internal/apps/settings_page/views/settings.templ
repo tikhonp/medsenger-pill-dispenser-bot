@@ -4,26 +4,26 @@ import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/bviews"
 import "github.com/tikhonp/medsenger-pill-dispenser-bot/internal/db/models"
 import "fmt"
 
-templ ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract) {
+templ ConnectedPillDispenser(pd models.PillDispenser, contract *models.Contract, token string) {
 	<p>SN: { pd.SerialNumber }</p>
 	<p>
 		<a
-			href={ templ.URL(fmt.Sprintf("%s/medsenger/settings/set-schedule/%s?agent_token=%s", bviews.Host, pd.SerialNumber, contract.AgentToken)) }
+			href={ templ.URL(fmt.Sprintf("%s/medsenger/settings/set-schedule/%s?agent_token=%s", bviews.Host, pd.SerialNumber, token)) }
 		>Настроить расписание</a>
 	</p>
 	<form hx-delete={ string(templ.URL(bviews.Host + "/medsenger/settings/pill-dispenser")) } hx-target={ "#conneced-pill-dispenser-" + pd.SerialNumber } hx-swap="outerHTML">
-		@bviews.AgentToken(contract)
+		@bviews.AgentToken(contract, token)
 		<input type="hidden" name="serial-number" value={ pd.SerialNumber }/>
 		<button type="submit">Отвязать</button>
 	</form>
 }
 
-templ PillDispensersList(pillDispensers []models.PillDispenser, contract *models.Contract, errors string) {
+templ PillDispensersList(pillDispensers []models.PillDispenser, contract *models.Contract, errors string, token string) {
 	if len(pillDispensers) > 0 {
 		<h2>Подключенные таблетницы</h2>
 		for _, pd := range pillDispensers {
 			<div id={ "conneced-pill-dispenser-" + pd.SerialNumber }>
-				@ConnectedPillDispenser(pd, contract)
+				@ConnectedPillDispenser(pd, contract, token)
 			</div>
 		}
 	} else {
@@ -40,16 +40,16 @@ templ PillDispensersList(pillDispensers []models.PillDispenser, contract *models
 			Serial Number
 			<input type="text" name="serial-number" required/>
 		</label>
-		@bviews.AgentToken(contract)
+		@bviews.AgentToken(contract, token)
 		<button type="submit">Добавить устройство</button>
 	</form>
 }
 
-templ Settings(contract *models.Contract, connectedPillDispensers []models.PillDispenser) {
+templ Settings(contract *models.Contract, connectedPillDispensers []models.PillDispenser, token string) {
 	@bviews.Base("Настройки") {
 		<h1>Пациент { contract.PatientName.String }</h1>
 		<div id="pill-dispensers-list">
-			@PillDispensersList(connectedPillDispensers, contract, "")
+			@PillDispensersList(connectedPillDispensers, contract, "", token)
 		</div>
 	}
 }

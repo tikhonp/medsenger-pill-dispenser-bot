@@ -1,9 +1,8 @@
 module github.com/tikhonp/medsenger-pill-dispenser-bot
 
-go 1.24.6
+go 1.25
 
 require (
-	github.com/TikhonP/maigo v0.4.1
 	github.com/a-h/templ v0.3.977
 	github.com/getsentry/sentry-go v0.42.0
 	github.com/getsentry/sentry-go/echo v0.42.0
@@ -11,6 +10,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/lib/pq v1.11.2
+	github.com/tikhonp/maigo v0.5.1
 )
 
 require (
@@ -18,6 +18,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.9.2 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
