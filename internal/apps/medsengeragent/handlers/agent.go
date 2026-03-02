@@ -91,7 +91,7 @@ func (mah *MedsengerAgentHandler) Init(c echo.Context) error {
 		return err
 	}
 	contractID, err := util.GetContractID(c)
-	if err == nil {
+	if err != nil {
 		return err
 	}
 	err = mah.DB.Contracts().NewContract(contractID, m.ClinicID, m.Locale)
