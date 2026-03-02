@@ -3,7 +3,6 @@ package medsengeragent
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/tikhonp/maigo"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/apps/medsengeragent/handlers"
 	"github.com/tikhonp/medsenger-pill-dispenser-bot/internal/util"
@@ -12,10 +11,10 @@ import (
 func ConfigureMedsengerAgentGroup(g *echo.Group, deps util.Dependencies) {
 	mah := handlers.MedsengerAgentHandler(deps)
 
-	g.Use(middleware.BodyDump(func(c echo.Context, reqBody []byte, resBody []byte) {
-		println("Request Body:", string(reqBody))
-		println("Response Body:", string(resBody))
-	}))
+	// g.Use(middleware.BodyDump(func(c echo.Context, reqBody []byte, resBody []byte) {
+	// 	println("Request Body:", string(reqBody))
+	// 	println("Response Body:", string(resBody))
+	// }))
 
 	g.Use(util.AgentTokenJSON(deps.Maigo, maigo.RequestRoleSystem))
 
