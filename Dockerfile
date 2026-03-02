@@ -1,7 +1,7 @@
 # syntax=docker.io/docker/dockerfile-upstream:1.17.0-labs
 
-ARG GOVERSION=1.25.7
-ARG NODE_VERSION=25.6
+ARG GOVERSION=1.26.0
+ARG NODE_VERSION=25.7
 
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS frontend-builder
